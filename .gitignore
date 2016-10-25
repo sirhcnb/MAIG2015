@@ -60,3 +60,7 @@ NEAT Frameworks
 target
 .classpath
 .project
+
+# Output
+out/*
+db/*
