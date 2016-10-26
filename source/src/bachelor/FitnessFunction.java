@@ -54,7 +54,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             false, true, false, true );
 
     //Recording params
-    public int delayRecording = 1000;
+    public int delayRecording = 100;
 
     @Override
     public void init(Properties props) throws Exception {

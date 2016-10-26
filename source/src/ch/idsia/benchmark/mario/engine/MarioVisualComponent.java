@@ -483,7 +483,7 @@ public void postInitGraphicsAndLevel()
 
 public void adjustFPS()
 {
-		int fps = 5;
+		int fps = 40;
     	delay = (fps > 0) ? (fps >= GlobalOptions.MaxFPS) ? 0 : (1000 / fps) : 100;
 }
 
