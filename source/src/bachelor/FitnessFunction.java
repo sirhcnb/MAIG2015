@@ -98,7 +98,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     }
 
     private int singleTrial( Activator activator ) {
-        int fitness = 0;
+        int fitness;
 
         marioInputs.setRadius(1, 1, 1, 1);
         while(!environment.isLevelFinished()){
@@ -133,11 +133,14 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
 
         try {
             // Load in chromosome to the factory
-            Activator activator = factory.newActivator( c );
+            Activator activator = factory.newActivator(c);
 
             if(evaluationType.equals("DistanceTraveled"))
             {
-                fitness = runDistanceEvaluation( activator, delayRecording );
+                fitness = runDistanceEvaluation(activator);
+            } else if(evaluationType.equals("Interaction"))
+            {
+                runInteraction(activator, delayRecording);
             } else
             {
                 System.out.println("No chromosome evaluation for this type yet!: " + evaluationType);
@@ -152,7 +155,10 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         return fitness;
     }
 
-    private int runDistanceEvaluation( Activator activator, int delayRecording ) {
+    /**
+     * Automated evaluation!!
+     */
+    private int runDistanceEvaluation(Activator activator) {
         //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
         int longestDistance = 0;
         int currentDistance = environment.getEvaluationInfo().distancePassedCells;
@@ -168,9 +174,8 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         //Start timer, with 1 second delay and increment each second
         t.scheduleAtFixedRate(task, 1000, 1000);
 
-
         //Run trial
-        while(!environment.isLevelFinished() && timer < 6){
+        while(!environment.isLevelFinished() && timer < 3){
             if(longestDistance < currentDistance) {
                 //System.out.println("NEW DISTANCE!!");
                 longestDistance = currentDistance;
@@ -178,11 +183,11 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             }
 
             //Begin recording after some seconds
-            if(environment.getEvaluationInfo().timeSpent >= ( delayRecording / 1000 ) )
-                environment.recordMario(true);
+            /*if(environment.getEvaluationInfo().timeSpent >= ( delayRecording / 1000 ) )
+                environment.recordMario(false);*/
 
             //Set all actions to false
-            agent.reset();
+            resetActions();
 
             //Get inputs
             double[] networkInput = marioInputs.getAllInputs();
@@ -191,6 +196,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             double[] networkOutput = activator.next(networkInput);
             boolean[] actions = getAction(networkOutput);
 
+            //Perform action
             environment.performAction(actions);
             makeTick();
 
@@ -202,8 +208,63 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         t.cancel();
         t.purge();
 
+        //Get current position of mario and put it as fitness (even though he might have gotten further)
         int fitness = environment.getEvaluationInfo().distancePassedCells;
         return fitness;
+    }
+
+    /**
+     * Interaction evaluation!!
+     */
+    private void runInteraction(Activator activator, int delayRecording) {
+        //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
+        int longestDistance = 0;
+        int currentDistance = environment.getEvaluationInfo().distancePassedCells;
+
+        Timer t = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                timer++;
+            }
+        };
+
+        //Start timer, with 1 second delay and increment each second
+        t.scheduleAtFixedRate(task, 1000, 1000);
+
+        //Run trial
+        while(!environment.isLevelFinished() && timer < 3){
+            if(longestDistance < currentDistance) {
+                //System.out.println("NEW DISTANCE!!");
+                longestDistance = currentDistance;
+                timer = 0;
+            }
+
+            //Begin recording after some seconds
+            if(environment.getEvaluationInfo().timeSpent >= ( delayRecording / 1000 ) )
+                environment.recordMario(true);
+
+            //Set all actions to false
+            resetActions();
+
+            //Get inputs
+            double[] networkInput = marioInputs.getAllInputs();
+
+            //Feed the inputs to the network and translate it
+            double[] networkOutput = activator.next(networkInput);
+            boolean[] actions = getAction(networkOutput);
+
+            //Perform action
+            environment.performAction(actions);
+            makeTick();
+
+            currentDistance = environment.getEvaluationInfo().distancePassedCells;
+        }
+
+        //Cancel timer in current evaluation, as we got out of the evaluation while loop
+        timer = 0;
+        t.cancel();
+        t.purge();
     }
 
     /**
@@ -385,6 +446,15 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     public void makeTick(){
         environment.tick();
         agent.integrateObservation(environment);
+    }
+
+    public void resetActions(){
+        actions[Mario.KEY_LEFT] = false;
+        actions[Mario.KEY_RIGHT] = false;
+        actions[Mario.KEY_DOWN] = false;
+        actions[Mario.KEY_UP] = false;
+        actions[Mario.KEY_JUMP] = false;
+        actions[Mario.KEY_SPEED] = false;
     }
 
     @Override

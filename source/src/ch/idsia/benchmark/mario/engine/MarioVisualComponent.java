@@ -389,7 +389,7 @@ public void render(Graphics g)
     if(drawEnemies)
     	drawEnemies();
     
-    createImageAtXFrames(8);
+    createImageAtXFrames(8, saveImages);
     
     g.clearRect(5, 5, 5, 5);
 }
@@ -631,14 +631,19 @@ public void drawMarioTrajectory(){
 	System.out.println("Drawing line");
 }
 
-public void createImageAtXFrames(int modulus){
-	if(myCounter % modulus == 0){
-		System.out.println("Creating Image!");
-		createImage(); 
-	} else {
-		System.out.println("myCounter:" + myCounter);
-	}
-	myCounter++; 
+public void createImageAtXFrames(int modulus, boolean record){
+    if(record == true)
+    {
+        if(myCounter % modulus == 0){
+            System.out.println("Creating Image!");
+            createImage();
+        } else {
+            System.out.println("myCounter:" + myCounter);
+        }
+        myCounter++;
+    } else {
+        /*DO NOTHING!!*/
+    }
 }
 
 public void drawPoint(){

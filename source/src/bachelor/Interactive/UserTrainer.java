@@ -1,5 +1,7 @@
-package bachelor;
+package bachelor.Interactive;
 
+import bachelor.FitnessFunction;
+import bachelor.MarioTrainer;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
@@ -18,14 +20,16 @@ import org.jgap.Chromosome;
 import org.jgap.Genotype;
 import org.jgap.event.GeneticEvent;
 import own.FilePersistenceMario;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by Pierre on 26-10-2016.
+ * Created by Pierre on 30-10-2016.
  */
-public class MarioTrainer implements Configurable {
+public class UserTrainer implements Configurable {
     protected static Logger logger = Logger.getLogger(Evolver.class);
 
     /**
@@ -52,6 +56,7 @@ public class MarioTrainer implements Configurable {
     GenotypeGif genotypeGif = null;
 
     //Generations and population per generation
+    public int generation = 0;
     public int numEvolutions = 0;
     public int populationSize = 0;
 
@@ -67,13 +72,25 @@ public class MarioTrainer implements Configurable {
     //For gif creation
     public int folderName = 0;
     public static FitnessFunction ff = new FitnessFunction();
-    static ArrayList<Chromosome> iecCandidates = new ArrayList<Chromosome>();
 
     /**
      * ctor; must call <code>init()</code> before using this object
      */
-    public MarioTrainer() {
+    public UserTrainer() throws Throwable {
         super();
+
+        Properties props = new Properties("mario.properties");
+        Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
+        ff.init(props);
+        ff.levelOptions = "-mix 16 -miy 223";
+        ff.generation = 0;
+
+        //RUN
+        try {
+            init(props);
+        } catch (Throwable th) {
+            System.out.println(th);
+        }
     }
 
     @Override
@@ -141,76 +158,41 @@ public class MarioTrainer implements Configurable {
         }
     }
 
+//    TODO: Make breed functionality (users able to choose multiple NN's and do crossover)
+    public void trainWithInteraction() throws Exception {
+        String evaluationType = "Interaction";
 
-    public void trainDistanceTraveled() throws Exception {
-        String evaluationType = "DistanceTraveled";
+        logger.info( "Run: start" );
 
-        logger.info("Run: start");
+        System.out.println("*************** Running generation: " + generation + " ***************");
+        logger.info( "Generation " + generation + ": start" );
 
-        for (int generation = 0; generation < numEvolutions; generation++) {
-            System.out.println(numEvolutions);
+        //Create gif folder for training with interaction
+        new File("db/gifs/interaction/" + folderName).mkdirs();
 
-            //Generation step
-            System.out.println("*************** Running generation: " + generation + " ***************");
-            logger.info("Generation " + generation + ": start");
+        //Get all chromosomes
+        List<Chromosome> chroms = genotype.getChromosomes();
 
-            //Create gif folder for specific fitness function purpose
-            new File("db/gifs/automated" + folderName).mkdirs();
+        //Evaluate each chromosome in the population
+        for (int i = 0; i < populationSize; i++) {
+            //Get a chromosome
+            Chromosome chrommie = (Chromosome) chroms.get(i);
 
-            //Get all the chromosomes (for evaluation)
-            List<Chromosome> chroms = genotype.getChromosomes();
+            //Record that chromosome
+            ff.evaluateChromosome(chrommie, evaluationType);
 
-            //Evaluate each chromosome in the population
-            for (int i = 0; i < populationSize; i++) {
-                //Get a chromosome
-                Chromosome chrommie = (Chromosome) chroms.get(i);
-
-                //Evaluate that chromosome
-                int fitness = ff.evaluateChromosome(chrommie, evaluationType);
-                chrommie.setFitnessValue(fitness);
-
-                //Debugging parameter
-                //System.out.println(chrommie.getFitnessValue());
-
-                //Create and save gif
-                //GifSequenceWriter.createGIF("db/gifs/distanceTraveled" + folderName + "/");
-            }
-
-            ff.generation++;
-            System.out.println("Generation after record: " + ff.generation + " | " + ff);
-
-            Chromosome chosen = genotype.getFittestChromosome();
-
-            //Debugging parameters
-            /*System.out.println(chosen.getId());
-            System.out.println(chosen.getFitnessValue());*/
-
-            //Add best evaluated chromosome to the list and save it
-            bestChroms.add(chosen);
-            db.storeToFolder(chosen, "./db/best/automated");
-            genotype.evolveGif();
-
-            GifSequenceWriter.fileNumber = 0;
-            folderName++;
+            //Create and save gif
+            GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
         }
 
-        System.exit(0);
+        ff.generation++;
+        System.out.println("Generation after record: " + ff.generation + " | " + ff);
+
+        GifSequenceWriter.fileNumber = 0;
+        folderName++;
     }
 
-    public static void main(String[] args) throws Throwable {
-        Properties props = new Properties("marioAuto.properties");
-        Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
-        ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223";
-        ff.generation = 0;
+    public void breed(boolean[] chosenGifs) {
 
-        //RUN
-        try {
-            MarioTrainer mT = new MarioTrainer();
-            mT.init(props);
-            mT.trainDistanceTraveled();
-        } catch (Throwable th) {
-            System.out.println(th);
-        }
     }
 }
