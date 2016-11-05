@@ -87,6 +87,7 @@ private long tm0;
 int delay;
 private KeyAdapter prevHumanKeyBoardAgent;
 private String agentNameStr;
+
 private GameViewer gameViewer = null;
 private static MarioVisualComponent marioVisualComponent = null;
 

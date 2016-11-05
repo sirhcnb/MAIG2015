@@ -69,7 +69,8 @@ private int[] serializedEnemies;      // memory is allocated in reset
 private int[] serializedMergedObservation; // memory is allocated in reset
 
 private final LevelScene levelScene;
-//    private int frame = 0;
+
+    //    private int frame = 0;
 private MarioVisualComponent marioVisualComponent;
 private Agent agent;
 
@@ -787,4 +788,6 @@ public void changeFPS(){
 	marioVisualComponent.delayFPS = !marioVisualComponent.delayFPS; 
 }
 }
+
+
 

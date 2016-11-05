@@ -2,11 +2,15 @@ package bachelor.Interactive;
 
 import bachelor.FitnessFunction;
 import bachelor.MarioTrainer;
+import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
+import ch.idsia.benchmark.mario.environments.MarioEnvironment;
+import ch.idsia.tools.GameViewer;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
 import com.anji.neat.Evolver;
 import com.anji.neat.NeatConfiguration;
+import com.anji.neat.NeatCrossoverReproductionOperator;
 import com.anji.persistence.Persistence;
 import com.anji.run.Run;
 import com.anji.util.Configurable;
@@ -15,9 +19,7 @@ import com.anji.util.Reset;
 import iec.GenotypeGif;
 import iec.GifSequenceWriter;
 import org.apache.log4j.Logger;
-import org.jgap.BulkFitnessFunction;
-import org.jgap.Chromosome;
-import org.jgap.Genotype;
+import org.jgap.*;
 import org.jgap.event.GeneticEvent;
 import own.FilePersistenceMario;
 
@@ -53,10 +55,8 @@ public class UserTrainer implements Configurable {
     private static NeatConfiguration config = null;
 
     Genotype genotype = null;
-    GenotypeGif genotypeGif = null;
 
     //Generations and population per generation
-    public int generation = 0;
     public int numEvolutions = 0;
     public int populationSize = 0;
 
@@ -69,21 +69,21 @@ public class UserTrainer implements Configurable {
     //Finding best chromosome each generation
     static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
 
-    //For gif creation
+    //For gif creation and handling in UserInterface
     public int folderName = 0;
-    public static FitnessFunction ff = new FitnessFunction();
+    private static FitnessFunction ff = new FitnessFunction();
 
     /**
-     * ctor; must call <code>init()</code> before using this object
+     * Starts the user interaction trainer.
+     * @throws Throwable If initialization of Configuration object fails.
      */
     public UserTrainer() throws Throwable {
         super();
 
-        Properties props = new Properties("mario.properties");
+        Properties props = new Properties("marioInteractive.properties");
         Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
         ff.init(props);
         ff.levelOptions = "-mix 16 -miy 223";
-        ff.generation = 0;
 
         //RUN
         try {
@@ -91,8 +91,17 @@ public class UserTrainer implements Configurable {
         } catch (Throwable th) {
             System.out.println(th);
         }
+
+        ff.generation = 0;
+        ff.populationSize = populationSize;
     }
 
+    /**
+     * Initialize our Configration object and load in the parameters.
+     * Contains important information of parts to build the NN.
+     * @param props configuration parameters.
+     * @throws Exception In case we fail to load in the configuration file.
+     */
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
@@ -148,7 +157,6 @@ public class UserTrainer implements Configurable {
 
         // load population, either from previous run or random
         genotype = db.loadGenotype(config);
-        genotypeGif = (GenotypeGif) db.loadGenotype(config);
 
         if (genotype != null)
             logger.info("genotype from previous run");
@@ -158,14 +166,18 @@ public class UserTrainer implements Configurable {
         }
     }
 
-//    TODO: Make breed functionality (users able to choose multiple NN's and do crossover)
+
+    /**
+     * Method being used to train according to users interaction with the UI.
+     * @throws Exception In case gif sequence writer fails.
+     */
     public void trainWithInteraction() throws Exception {
         String evaluationType = "Interaction";
 
         logger.info( "Run: start" );
 
-        System.out.println("*************** Running generation: " + generation + " ***************");
-        logger.info( "Generation " + generation + ": start" );
+        System.out.println("*************** Running generation: " + ff.generation + " ***************");
+        logger.info( "Generation " + ff.generation + ": start" );
 
         //Create gif folder for training with interaction
         new File("db/gifs/interaction/" + folderName).mkdirs();
@@ -173,18 +185,24 @@ public class UserTrainer implements Configurable {
         //Get all chromosomes
         List<Chromosome> chroms = genotype.getChromosomes();
 
+        System.out.println(chroms.size());
+
         //Evaluate each chromosome in the population
         for (int i = 0; i < populationSize; i++) {
             //Get a chromosome
             Chromosome chrommie = (Chromosome) chroms.get(i);
 
-            //Record that chromosome
-            ff.evaluateChromosome(chrommie, evaluationType);
+            //Record that chromosome (Fitness will always be 0, as the user is to chose which chromosomes to use)
+            int fitness = ff.evaluateChromosome(chrommie, evaluationType);
+            chrommie.setFitnessValue(fitness);
+
+            System.out.println(chrommie.getId());
 
             //Create and save gif
             GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
         }
 
+        //Keep track of current generation (for server part and comparison)
         ff.generation++;
         System.out.println("Generation after record: " + ff.generation + " | " + ff);
 
@@ -192,7 +210,31 @@ public class UserTrainer implements Configurable {
         folderName++;
     }
 
+    /**
+     * Basic breed functionality. ANJI handles everything regarding reproduction, mutation and so on.
+     * @param chosenGifs Chosen chromosomes to influence the new offsprings by a huge margin.
+     */
     public void breed(boolean[] chosenGifs) {
+        List<Chromosome> chroms = genotype.getChromosomes();
 
+        for(int i = 0; i < chosenGifs.length; i++){
+            if(chosenGifs[i] == true) {
+                Chromosome chosenChrom = chroms.get(i);
+                chosenChrom.setFitnessValue(1000);
+            } else {
+                Chromosome notChosenChrom = chroms.get(i);
+                notChosenChrom.setFitnessValue(0);
+            }
+        }
+
+        genotype.evolveGif();
+    }
+
+    /**
+     * Returns the current FitnessFunction object being used.
+     * @return FitnessFunction object
+     */
+    public static FitnessFunction getFf() {
+        return ff;
     }
 }

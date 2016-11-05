@@ -49,7 +49,6 @@ public class MarioTrainer implements Configurable {
     private static NeatConfiguration config = null;
 
     Genotype genotype = null;
-    GenotypeGif genotypeGif = null;
 
     //Generations and population per generation
     public int numEvolutions = 0;
@@ -67,15 +66,21 @@ public class MarioTrainer implements Configurable {
     //For gif creation
     public int folderName = 0;
     public static FitnessFunction ff = new FitnessFunction();
-    static ArrayList<Chromosome> iecCandidates = new ArrayList<Chromosome>();
 
     /**
-     * ctor; must call <code>init()</code> before using this object
+     * Starts the automated trainer.
+     * @throws Throwable If initialization of Configuration object fails.
      */
     public MarioTrainer() {
         super();
     }
 
+    /**
+     * Initialize our Configration object and load in the parameters.
+     * Contains important information of parts to build the NN.
+     * @param props configuration parameters.
+     * @throws Exception In case we fail to load in the configuration file.
+     */
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
@@ -131,7 +136,6 @@ public class MarioTrainer implements Configurable {
 
         // load population, either from previous run or random
         genotype = db.loadGenotype(config);
-        genotypeGif = (GenotypeGif) db.loadGenotype(config);
 
         if (genotype != null)
             logger.info("genotype from previous run");
@@ -141,14 +145,16 @@ public class MarioTrainer implements Configurable {
         }
     }
 
-
+    /**
+     * Method being used to train automatically, according to distance traveled.
+     * @throws Exception In case DB storing fails.
+     */
     public void trainDistanceTraveled() throws Exception {
         String evaluationType = "DistanceTraveled";
 
         logger.info("Run: start");
 
         for (int generation = 0; generation < numEvolutions; generation++) {
-            System.out.println(numEvolutions);
 
             //Generation step
             System.out.println("*************** Running generation: " + generation + " ***************");
@@ -168,22 +174,22 @@ public class MarioTrainer implements Configurable {
                 //Evaluate that chromosome
                 int fitness = ff.evaluateChromosome(chrommie, evaluationType);
                 chrommie.setFitnessValue(fitness);
-
-                //Debugging parameter
-                //System.out.println(chrommie.getFitnessValue());
-
-                //Create and save gif
-                //GifSequenceWriter.createGIF("db/gifs/distanceTraveled" + folderName + "/");
             }
 
             ff.generation++;
             System.out.println("Generation after record: " + ff.generation + " | " + ff);
 
+            //Get chromosome with best fitness
             Chromosome chosen = genotype.getFittestChromosome();
 
-            //Debugging parameters
-            /*System.out.println(chosen.getId());
-            System.out.println(chosen.getFitnessValue());*/
+            //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
+            int bestFitness = chosen.getFitnessValue();
+            if(bestFitness >= (targetFitness-1))
+            {
+                db.storeToFolder(chosen, System.getProperty("user.home") + "/Desktop/bestAutoChromosome");
+                System.out.println("Best automated chromosome saved to the desktop successfully!");
+                break;
+            }
 
             //Add best evaluated chromosome to the list and save it
             bestChroms.add(chosen);
@@ -197,6 +203,11 @@ public class MarioTrainer implements Configurable {
         System.exit(0);
     }
 
+    /**
+     * Starts the automated trainer.
+     * @param args nothing, just the program name as usual.
+     * @throws Throwable If initialization of Configuration object fails.
+     */
     public static void main(String[] args) throws Throwable {
         Properties props = new Properties("marioAuto.properties");
         Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
@@ -204,7 +215,6 @@ public class MarioTrainer implements Configurable {
         ff.levelOptions = "-mix 16 -miy 223";
         ff.generation = 0;
 
-        //RUN
         try {
             MarioTrainer mT = new MarioTrainer();
             mT.init(props);

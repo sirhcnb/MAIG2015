@@ -28,6 +28,7 @@
 package ch.idsia.benchmark.mario.environments;
 
 import ch.idsia.agents.Agent;
+import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
 import ch.idsia.benchmark.mario.engine.Replayer;
 import ch.idsia.benchmark.mario.engine.sprites.Mario;
 import ch.idsia.tools.EvaluationInfo;

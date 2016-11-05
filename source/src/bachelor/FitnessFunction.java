@@ -42,8 +42,8 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     //Control buttons
     boolean[] actions = new boolean[Environment.numberOfKeys];
 
+    public static int populationSize = 0;
     public static int generation = 0;
-    public static int prevGeneration = 0;
     public static int difficulty = 0;
     public static int level = 0;
     public static int seed = 0;
@@ -75,9 +75,9 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     }
 
     /**
-     * Evaluate for the automated Neat step
-     * @param c
-     * @param visual
+     * Evaluate for the automated Neat step.
+     * @param c The chromosome to evaluate.
+     * @param visual Show mario window or not.
      */
     public void evaluate( Chromosome c, boolean visual ) {
         marioAIOptions.setVisualization(visual);
@@ -97,13 +97,18 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         }
     }
 
+    /**
+     * Stimulates the chromosome and evaluates according to its fitness.
+     * @param activator Stimuli object
+     * @return Fitness of the chromosome
+     */
     private int singleTrial( Activator activator ) {
         int fitness;
 
         marioInputs.setRadius(1, 1, 1, 1);
         while(!environment.isLevelFinished()){
             //Set all actions to false
-            agent.reset();
+            resetActions();
 
             //Get inputs
             double[] networkInput = marioInputs.getAllInputs();
@@ -121,6 +126,12 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         return fitness;
     }
 
+    /**
+     * Evaluates according to if its automated or interactive.
+     * @param c The chromosome to be evaluated.
+     * @param evaluationType Automated or interaction.
+     * @return Fitness of the chromosome.
+     */
     public int evaluateChromosome(Chromosome c, String evaluationType){
         //New evaluation, put mario at start position
         environment.reset(levelOptions);
@@ -140,7 +151,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
                 fitness = runDistanceEvaluation(activator);
             } else if(evaluationType.equals("Interaction"))
             {
-                runInteraction(activator, delayRecording);
+                fitness = runInteraction(activator, delayRecording);
             } else
             {
                 System.out.println("No chromosome evaluation for this type yet!: " + evaluationType);
@@ -210,13 +221,14 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
 
         //Get current position of mario and put it as fitness (even though he might have gotten further)
         int fitness = environment.getEvaluationInfo().distancePassedCells;
+
         return fitness;
     }
 
     /**
-     * Interaction evaluation!!
+     * Interactive evaluation!!
      */
-    private void runInteraction(Activator activator, int delayRecording) {
+    private int runInteraction(Activator activator, int delayRecording) {
         //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
         int longestDistance = 0;
         int currentDistance = environment.getEvaluationInfo().distancePassedCells;
@@ -265,130 +277,19 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         timer = 0;
         t.cancel();
         t.purge();
-    }
 
-    /**
-     * @return normalized distance that Mario have travelled in the stage
-     */
-    public double getFitnessDistancePassed(double ratio){
-
-        double levelLength = environment.getEvaluationInfo().levelLength;
-        double distancePassed = environment.getEvaluationInfo().distancePassedCells;
-
-        double fitness = distancePassed / levelLength * ratio;
-        return fitness;
-    }
-
-    /**
-     * @return normalized time left of stage
-     */
-
-    public double getFitnessQuick(int ratio){
-
-        int passedCells = environment.getEvaluationInfo().distancePassedCells;
-        double fitness = 0;
-
-        double timeLeft = environment.getEvaluationInfo().timeLeft;
-        double totalTime = timeLeft + environment.getEvaluationInfo().timeSpent;
-
-
-        if(passedCells > 255){ //Only if goal reached
-
-            fitness = timeLeft / totalTime * ratio;
-            System.out.println("timefitness: " + fitness);
-        }
+        //Get current position of mario and put it as fitness (even though he might have gotten further)
+        int fitness = environment.getEvaluationInfo().distancePassedCells;
 
         return fitness;
     }
 
-    /**
-     * @return Normalized value of amount of coins collected
-     */
-
-    public double getFitnessGreedy(double ratio){
-
-        double totalNumberOfCoins = environment.getEvaluationInfo().totalNumberOfCoins;
-        double coinsCollected = environment.getEvaluationInfo().coinsGained;
-
-        double fitness = coinsCollected / totalNumberOfCoins * ratio;
-        return fitness;
+    public static MarioAIOptions getMarioAIOptions() {
+        return marioAIOptions;
     }
 
-    /**
-     * @return Normalized result of creatures killed
-     */
-
-    public double getFitnessAgressive(double ratio){
-
-        double totalCreatures = environment.getEvaluationInfo().totalNumberOfCreatures;
-        double totalKills = environment.getEvaluationInfo().killsTotal;
-
-        double fitness = totalKills / totalCreatures * ratio;
-        return fitness;
-    }
-
-    /**
-     * @return Normalized result of creatures killed, varied by kill method
-     */
-    public double getFitnessVariedAgressive(double ratioStomp, double ratioFire, double ratioShell){
-
-        double fitness = 0;
-
-        double totalCreatures = environment.getEvaluationInfo().totalNumberOfCreatures;
-
-        double shellKills = environment.getEvaluationInfo().killsByShell * ratioShell;
-        double fireKills = environment.getEvaluationInfo().killsByFire * ratioFire;
-        double stompKills = environment.getEvaluationInfo().killsByStomp * ratioStomp;
-
-        fitness += shellKills / totalCreatures * ratioShell;
-        fitness += fireKills / totalCreatures * ratioFire;
-        //System.out.println("FireKills: " + fitness );
-        fitness += stompKills / totalCreatures * ratioStomp;
-        //System.out.println("+ stompKills: " + fitness );
-
-        return fitness;
-    }
-
-    public double getFitnessMushroomsAndFlowers(int ratioMushrooms, int ratioFlowers){
-
-        double fitness = 0;
-
-        double totalFlowers = environment.getEvaluationInfo().totalNumberOfFlowers;
-        double totalMushrooms = environment.getEvaluationInfo().totalNumberOfMushrooms;
-
-        double flowersEaten = environment.getEvaluationInfo().flowersDevoured;
-        double mushroomsEaten = environment.getEvaluationInfo().mushroomsDevoured;
-
-        //Mushrooms
-        if(totalFlowers > 0)
-            fitness += flowersEaten / totalFlowers * ratioMushrooms;
-        //Flowers
-        if(totalMushrooms > 0)
-            fitness += mushroomsEaten / totalMushrooms * ratioFlowers;
-
-        System.out.println("-----");
-        System.out.println("flowersEaten: " + flowersEaten + " / " + totalFlowers);
-        System.out.println("mushroomsEaten: " + mushroomsEaten + " / " + totalMushrooms);
-
-
-        return fitness;
-    }
-
-    public double getFitnessExplore(int ratioHiddenBlocks, int ratioPowerUps){
-
-        double fitness = 0;
-
-//		double totalFlowers = environment.getEvaluationInfo().totalNumberOfFlowers;
-//		double totalMushrooms = environment.getEvaluationInfo().totalNumberOfMushrooms;
-//
-//		fitness += ( totalFlowers + totalMushrooms ) * ratioPowerUps;
-
-        double totalHiddenBlocks = environment.getEvaluationInfo().totalNumberOfHiddenBlocks;
-        double hiddenBlocksFound = environment.getEvaluationInfo().hiddenBlocksFound;
-
-        fitness += hiddenBlocksFound / totalHiddenBlocks * ratioHiddenBlocks;
-
-        return fitness;
+    public static Environment getEnvironment() {
+        return environment;
     }
 
     /**
