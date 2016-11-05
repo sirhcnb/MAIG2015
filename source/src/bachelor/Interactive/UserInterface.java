@@ -17,9 +17,13 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.jgap.Genotype;
+
+import java.io.File;
 
 /**
  * Created by Pierre on 30-10-2016.
@@ -45,9 +49,9 @@ public class UserInterface extends Application {
         //    TODO: Make something fancy so that it doesnt give a 'Not Responding' in the breed window while the gifs are being made!
         try {
             UT = new UserTrainer();
-            initialize();
+            initialize(primaryStage);
             initializeButtons();
-            trainWithInteraction();
+            //trainWithInteraction();
         } catch (Throwable th) {
             System.out.println(th);
         }
@@ -61,9 +65,12 @@ public class UserInterface extends Application {
     /**
      * Set up the basic UI that the user is to interact with.
      */
-    public void initialize(){
+    public void initialize(Stage primaryStage){
         //Root pane of our scene (whole screen)
         root = new Pane();
+
+        //Initialize file chooser for loading and saving chromosomes
+        final FileChooser fileChooser = new FileChooser();
 
         //Initialize and add gridpane to our root pane
         GridPane gp = new GridPane();
@@ -74,22 +81,45 @@ public class UserInterface extends Application {
         chosenGifs = new boolean[UT.getFf().populationSize];
         gifButtons = new Button[UT.getFf().populationSize];
 
-        //TODO: Delete!! Test button to see if breeding and UI behaves as expected!
-        Button test = new Button();
-        test.setOnAction(new EventHandler<ActionEvent>() {
+        //Initialize breed button and add listener to do breed functionality
+        Button breed = new Button();
+        breed.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    UT.breed(chosenGifs);
+                    UT.breed(chosenGifs, false);
                     trainWithInteraction();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
         });
-        test.setLayoutX(1200);
-        test.setLayoutY(200);
-        root.getChildren().add(test);
+        breed.setLayoutX(1200);
+        breed.setLayoutY(200);
+        breed.setText("Breed");
+        root.getChildren().add(breed);
+
+        //Initialize load button and add listener to load in the chromosome
+        Button loadChrom = new Button();
+        loadChrom.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if(file != null) {
+                    try {
+                        UT.loadChromosome(file);
+                        UT.breed(chosenGifs, true);
+                        trainWithInteraction();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+        loadChrom.setLayoutX(1200);
+        loadChrom.setLayoutY(600);
+        loadChrom.setText("Load Chromosome");
+        root.getChildren().add(loadChrom);
     }
 
     /**
@@ -103,6 +133,8 @@ public class UserInterface extends Application {
         for(int i = 0; i < gifButtons.length; i++)
         {
             gifButtons[i] = new Button("");
+            gifButtons[i].setMinHeight(240);
+            gifButtons[i].setMinWidth(320);
         }
 
         for(int i = 0; i < populationSize; i++) {

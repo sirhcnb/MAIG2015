@@ -11,21 +11,30 @@ import com.anji.integration.PresentationEventListener;
 import com.anji.neat.Evolver;
 import com.anji.neat.NeatConfiguration;
 import com.anji.neat.NeatCrossoverReproductionOperator;
+import com.anji.persistence.FilePersistence;
 import com.anji.persistence.Persistence;
 import com.anji.run.Run;
 import com.anji.util.Configurable;
 import com.anji.util.Properties;
 import com.anji.util.Reset;
+import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
 import iec.GenotypeGif;
 import iec.GifSequenceWriter;
+import javafx.stage.FileChooser;
 import org.apache.log4j.Logger;
 import org.jgap.*;
 import org.jgap.event.GeneticEvent;
+import org.w3c.dom.Document;
 import own.FilePersistenceMario;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -68,6 +77,9 @@ public class UserTrainer implements Configurable {
 
     //Finding best chromosome each generation
     static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
+
+    //The loaded chromosome by the user
+    private Chromosome loadedChrom;
 
     //For gif creation and handling in UserInterface
     public int folderName = 0;
@@ -214,20 +226,51 @@ public class UserTrainer implements Configurable {
      * Basic breed functionality. ANJI handles everything regarding reproduction, mutation and so on.
      * @param chosenGifs Chosen chromosomes to influence the new offsprings by a huge margin.
      */
-    public void breed(boolean[] chosenGifs) {
+    public void breed(boolean[] chosenGifs, boolean isChromLoaded) throws InvalidConfigurationException {
         List<Chromosome> chroms = genotype.getChromosomes();
 
-        for(int i = 0; i < chosenGifs.length; i++){
-            if(chosenGifs[i] == true) {
-                Chromosome chosenChrom = chroms.get(i);
-                chosenChrom.setFitnessValue(1000);
-            } else {
-                Chromosome notChosenChrom = chroms.get(i);
-                notChosenChrom.setFitnessValue(0);
+        //If a chromosome has been loaded, breed from this chromosome only and ignore the others
+        if(isChromLoaded == true)
+        {
+            //Create new genotype from our loaded chromosome and begin evolving from this point
+            loadedChrom.setFitnessValue(1000);
+            List<Chromosome> loadedChromList = new ArrayList<>();
+            loadedChromList.add(loadedChrom);
+            genotype = new Genotype(config, loadedChromList);
+
+
+            //Start anew from generation 0
+            ff.generation = 0;
+        } else {
+            for(int i = 0; i < chosenGifs.length; i++){
+                if(chosenGifs[i] == true) {
+                    Chromosome chosenChrom = chroms.get(i);
+                    chosenChrom.setFitnessValue(1000);
+                } else {
+                    Chromosome notChosenChrom = chroms.get(i);
+                    notChosenChrom.setFitnessValue(0);
+                }
             }
         }
 
         genotype.evolveGif();
+    }
+
+    /**
+     * Load in the chromosome and evolve to reproduce and populate according to this chromosome
+     */
+    public void loadChromosome(File file) throws Exception {
+        //Load in the whole XML file as one string
+        BufferedReader br = new BufferedReader(new FileReader(file));
+        String line;
+        StringBuilder sb = new StringBuilder();
+
+        while((line = br.readLine()) != null){
+            sb.append(line.trim());
+        }
+
+        //Create chromosome from XML string
+        loadedChrom = FilePersistence.chromosomeFromXml(config, sb.toString());
     }
 
     /**
