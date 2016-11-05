@@ -1,7 +1,7 @@
 <?xml version = "1.0" encoding = "UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="./graphFitnessRefresh.xsl" ?>
 <!DOCTYPE run SYSTEM "../run.dtd">
-<run name="testrun" timedatestamp="[20161105 13:11:00 - 20161105 13:13:20]" >
+<run name="testrun" timedatestamp="[20161105 13:54:12 - 20161105 13:56:58]" >
 <search-parameters>
 <population-size>9</population-size>
 <generations>10000</generations>
@@ -10,7 +10,7 @@
 <fitness>
 <max>1000</max>
 <min>1</min>
-<avg>334</avg>
+<avg>223</avg>
 </fitness>
 <complexity>
 <champ>111</champ>
@@ -19,55 +19,53 @@
 <avg>111.0</avg>
 </complexity>
 <specie id="111" count="9">
-<chromosome id="111" fitness="1000" />
-<chromosome id="112" fitness="1000" />
-<chromosome id="113" fitness="1000" />
+<chromosome id="111" fitness="1" />
+<chromosome id="112" fitness="1" />
+<chromosome id="113" fitness="1" />
 <chromosome id="114" fitness="1" />
 <chromosome id="115" fitness="1" />
 <chromosome id="116" fitness="1" />
 <chromosome id="117" fitness="1" />
-<chromosome id="118" fitness="1" />
-<chromosome id="119" fitness="1" />
+<chromosome id="118" fitness="1000" />
+<chromosome id="119" fitness="1000" />
 </specie>
 </generation>
 <generation id="2" >
 <fitness>
 <max>1000</max>
-<min>1</min>
-<avg>445</avg>
+<min>1000</min>
+<avg>1000</avg>
 </fitness>
 <complexity>
-<champ>120</champ>
-<max>126</max>
+<champ>111</champ>
+<max>125</max>
 <min>111</min>
-<avg>118.77777777777777</avg>
+<avg>118.88888888888889</avg>
 </complexity>
-<specie id="111" count="1">
-<chromosome id="111" fitness="1" />
+<specie id="111" count="2">
+<chromosome id="118" fitness="1000" />
+<chromosome id="242" fitness="1000" />
 </specie>
-<specie id="228" count="1">
-<chromosome id="228" fitness="1" />
+<specie id="236" count="1">
+<chromosome id="236" fitness="1000" />
 </specie>
-<specie id="229" count="1">
-<chromosome id="229" fitness="1" />
+<specie id="237" count="1">
+<chromosome id="237" fitness="1000" />
 </specie>
-<specie id="230" count="1">
-<chromosome id="230" fitness="1" />
+<specie id="238" count="1">
+<chromosome id="238" fitness="1000" />
 </specie>
-<specie id="231" count="1">
-<chromosome id="231" fitness="1" />
+<specie id="239" count="1">
+<chromosome id="239" fitness="1000" />
 </specie>
-<specie id="232" count="1">
-<chromosome id="232" fitness="1000" />
+<specie id="240" count="1">
+<chromosome id="240" fitness="1000" />
 </specie>
-<specie id="233" count="1">
-<chromosome id="233" fitness="1000" />
+<specie id="241" count="1">
+<chromosome id="241" fitness="1000" />
 </specie>
-<specie id="234" count="1">
-<chromosome id="234" fitness="1000" />
-</specie>
-<specie id="235" count="1">
-<chromosome id="235" fitness="1000" />
+<specie id="243" count="1">
+<chromosome id="243" fitness="1000" />
 </specie>
 </generation>
 </run>

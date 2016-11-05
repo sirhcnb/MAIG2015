@@ -127,7 +127,7 @@ public class UserInterface extends Application {
             gifButtons[i].addEventHandler(MouseEvent.MOUSE_ENTERED, new EventHandler<MouseEvent>() {
                 @Override
                 public void handle(MouseEvent event) {
-                    int generation = UT.getFf().generation;
+                    int generation = UT.getFf().generation-1;
                     String gifLocation = "file:./db/gifs/interaction/" + Integer.toString(generation) + "/" + Integer.toString(chosen) + ".gif";
                     gifs[chosen] = new Image(gifLocation);
                     gifButtons[chosen].setGraphic(new ImageView(gifs[chosen]));
