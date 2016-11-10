@@ -1,19 +1,26 @@
 package bachelor.Interactive;
 
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableBooleanValue;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -21,6 +28,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
+import org.jgap.Chromosome;
 import org.jgap.Genotype;
 
 import java.io.File;
@@ -29,12 +37,15 @@ import java.io.File;
  * Created by Pierre on 30-10-2016.
  */
 public class UserInterface extends Application {
-
-    private Pane root;
+    private BorderPane root;
+    private GridPane gp;
+    private Pane cp;
     private UserTrainer UT;
     private Button[] gifButtons;
     private Image[] gifs;
     private boolean[] chosenGifs;
+
+    private int amountOfChosen = 0;
 
     public static void main(String[] args) {
         launch(args);
@@ -46,12 +57,9 @@ public class UserInterface extends Application {
      */
     @Override
     public void start(Stage primaryStage) {
-        //    TODO: Make something fancy so that it doesnt give a 'Not Responding' in the breed window while the gifs are being made!
         try {
             UT = new UserTrainer();
             initialize(primaryStage);
-            initializeButtons();
-            //trainWithInteraction();
         } catch (Throwable th) {
             System.out.println(th);
         }
@@ -67,65 +75,45 @@ public class UserInterface extends Application {
      */
     public void initialize(Stage primaryStage){
         //Root pane of our scene (whole screen)
-        root = new Pane();
+        root = new BorderPane();
 
-        //Initialize file chooser for loading and saving chromosomes
-        final FileChooser fileChooser = new FileChooser();
+        //Initialize our gridpane
+        gp = new GridPane();
 
-        //Initialize and add gridpane to our root pane
-        GridPane gp = new GridPane();
-        root.getChildren().add(0, gp);
+        //Set padding between grid objects
+        gp.setHgap(5);
+        gp.setVgap(5);
 
-        //Initialize array for gifs and buttons, and if buttons are chosen or not
+        //Add our gridpane to our root pane in the left side
+        root.setLeft(gp);
+
+        //Initialize center pane
+        cp = new Pane();
+
+        //Add our pane to our root pane in the center side
+        root.setCenter(cp);
+
+        //Disable gridpane and center pane until an action has been taken.
+        gp.setDisable(true);
+        cp.setDisable(true);
+
+        //Initialize array for gifs and buttons
         gifs = new Image[UT.getFf().populationSize];
         chosenGifs = new boolean[UT.getFf().populationSize];
         gifButtons = new Button[UT.getFf().populationSize];
 
-        //Initialize breed button and add listener to do breed functionality
-        Button breed = new Button();
-        breed.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                try {
-                    UT.breed(chosenGifs, false);
-                    trainWithInteraction();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        breed.setLayoutX(1200);
-        breed.setLayoutY(200);
-        breed.setText("Breed");
-        root.getChildren().add(breed);
+        //Initialize menu
+        initializeMenu(primaryStage);
 
-        //Initialize load button and add listener to load in the chromosome
-        Button loadChrom = new Button();
-        loadChrom.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent event) {
-                File file = fileChooser.showOpenDialog(primaryStage);
-                if(file != null) {
-                    try {
-                        UT.loadChromosome(file);
-                        UT.breed(chosenGifs, true);
-                        trainWithInteraction();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-        });
-        loadChrom.setLayoutX(1200);
-        loadChrom.setLayoutY(600);
-        loadChrom.setText("Load Chromosome");
-        root.getChildren().add(loadChrom);
+        //Initialize buttons
+        initializeGifButtons();
+        initializeBreedButton();
     }
 
     /**
      * Set up button listeners and actions to be performed
      */
-    public void initializeButtons() {
+    public void initializeGifButtons() {
         int columnIndex, rowIndex = 0;
         int populationSize = UT.getFf().populationSize;
 
@@ -146,10 +134,12 @@ public class UserInterface extends Application {
                     if(chosenGifs[chosen] == false) {
                         gifButtons[chosen].setStyle("-fx-border-color: blue");
                         chosenGifs[chosen] = true;
+                        amountOfChosen++;
                         System.out.println("Chosen: " + chosen);
                     } else if(chosenGifs[chosen] == true) {
                         gifButtons[chosen].setStyle("-fx-border-color: transparent");
                         chosenGifs[chosen] = false;
+                        amountOfChosen--;
                         System.out.println("Not chosen:" + chosen);
                     }
                 }
@@ -166,9 +156,6 @@ public class UserInterface extends Application {
                 }
             });
 
-            //Get our Gridpane from our root pane
-            GridPane gp = (GridPane) root.getChildren().get(0);
-
             //Set column and row index in which the gifs are to be shown
             columnIndex = i%3;
 
@@ -181,11 +168,130 @@ public class UserInterface extends Application {
             {
                 gp.add(gifButtons[i], columnIndex, rowIndex);
             }
-
-            //Set padding between grid objects
-            gp.setHgap(5);
-            gp.setVgap(5);
         }
+    }
+
+    public void initializeBreedButton() {
+        //Initialize breed button and add listener to do breed functionality
+        Button breed = new Button("Breed");
+        breed.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    UT.breed(chosenGifs, false);
+                    trainWithInteraction();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        breed.setLayoutX(0);
+        breed.setLayoutY(0);
+        cp.getChildren().add(breed);
+    }
+
+    public void initializeMenu(Stage primaryStage) {
+        FileChooser fileChooser = new FileChooser();
+
+        //Initialize menu bar
+        MenuBar menuBar = new MenuBar();
+
+        //Initialize menu for starting a new run
+        Menu menuStart = new Menu("Start");
+        menuBar.getMenus().add(menuStart);
+
+        //New run menuItem
+        MenuItem newRun = new MenuItem("New run");
+        newRun.setAccelerator(KeyCombination.keyCombination("Ctrl + N"));
+        newRun.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                try {
+                    UT.newRun();
+                    trainWithInteraction();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        //Add menu items to the menu bar menu
+        menuStart.getItems().add(newRun);
+
+        //Initialize menu for save and load, and add it to the menu bar
+        Menu menuFile = new Menu("File");
+        menuBar.getMenus().add(menuFile);
+
+        //Save menuItem
+        MenuItem save = new MenuItem("Save");
+        save.setAccelerator(KeyCombination.keyCombination("Ctrl + S"));
+        save.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+                if(amountOfChosen > 1) {
+                    alert.setTitle("Save dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("You have selected several chromosomes to save. " +
+                            "Please select only one!");
+
+                    alert.showAndWait();
+                } else if(amountOfChosen <= 0) {
+                    alert.setTitle("Save dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please select one chromosome to be saved!");
+
+                    alert.showAndWait();
+                } else {
+                    File file = fileChooser.showSaveDialog(primaryStage);
+                    if(file != null) {
+                        try {
+                            int saveChromosome = 0;
+                            for(int i = 0; i < chosenGifs.length; i++) {
+                                if(chosenGifs[i] == true)
+                                {
+                                    saveChromosome = i;
+                                    break;
+                                }
+                            }
+
+                            Chromosome c = (Chromosome) UT.genotype.getChromosomes().get(saveChromosome);
+
+                            UT.saveChromosome(c, file);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        });
+
+        //Load menuItem
+        MenuItem load = new MenuItem("Load");
+        load.setAccelerator(KeyCombination.keyCombination("Ctrl + L"));
+        load.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                File file = fileChooser.showOpenDialog(primaryStage);
+                if(file != null) {
+                    try {
+                        UT.loadChromosome(file);
+                        UT.breed(chosenGifs, true);
+                        trainWithInteraction();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        //Add menu items to the menu bar menu
+        menuFile.getItems().add(save);
+        menuFile.getItems().add(load);
+
+        //Add menu bar to our root pane
+        root.setTop(menuBar);
     }
 
     /**
@@ -214,7 +320,9 @@ public class UserInterface extends Application {
         Task<Void> task = new Task<Void>() {
             @Override
             public Void call() throws Exception {
-                root.setDisable(true);
+                root.getTop().setDisable(true);
+                root.getLeft().setDisable(true);
+                root.getCenter().setDisable(true);
 
                 UT.trainWithInteraction();
                 return null;
@@ -224,7 +332,9 @@ public class UserInterface extends Application {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent e) {
-                root.setDisable(false);
+                root.getTop().setDisable(false);
+                root.getLeft().setDisable(false);
+                root.getCenter().setDisable(false);
 
                 setGifs(UT.getFf().generation-1, UT.getFf().populationSize);
             }

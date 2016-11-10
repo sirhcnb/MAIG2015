@@ -1,40 +1,31 @@
 package bachelor.Interactive;
 
 import bachelor.FitnessFunction;
-import bachelor.MarioTrainer;
-import ch.idsia.benchmark.mario.engine.MarioVisualComponent;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
-import ch.idsia.tools.GameViewer;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
 import com.anji.neat.Evolver;
 import com.anji.neat.NeatConfiguration;
-import com.anji.neat.NeatCrossoverReproductionOperator;
 import com.anji.persistence.FilePersistence;
 import com.anji.persistence.Persistence;
 import com.anji.run.Run;
 import com.anji.util.Configurable;
 import com.anji.util.Properties;
 import com.anji.util.Reset;
-import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
-import iec.GenotypeGif;
 import iec.GifSequenceWriter;
-import javafx.stage.FileChooser;
 import org.apache.log4j.Logger;
-import org.jgap.*;
+import org.jgap.BulkFitnessFunction;
+import org.jgap.Chromosome;
+import org.jgap.Genotype;
+import org.jgap.InvalidConfigurationException;
 import org.jgap.event.GeneticEvent;
-import org.w3c.dom.Document;
 import own.FilePersistenceMario;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -63,7 +54,7 @@ public class UserTrainer implements Configurable {
 
     private static NeatConfiguration config = null;
 
-    Genotype genotype = null;
+    public Genotype genotype = null;
 
     //Generations and population per generation
     public int numEvolutions = 0;
@@ -90,14 +81,9 @@ public class UserTrainer implements Configurable {
      * @throws Throwable If initialization of Configuration object fails.
      */
     public UserTrainer() throws Throwable {
-        super();
-
         Properties props = new Properties("marioInteractive.properties");
-        Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
-        ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223";
 
-        //RUN
+        //Initialize User Trainer
         try {
             init(props);
         } catch (Throwable th) {
@@ -117,6 +103,8 @@ public class UserTrainer implements Configurable {
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
+        ff.levelOptions = "-mix 16 -miy 223";
+
         boolean doReset = props.getBooleanProperty(RESET_KEY, false);
         if (doReset) {
             logger.warn("Resetting previous run !!!");
@@ -238,14 +226,15 @@ public class UserTrainer implements Configurable {
             loadedChromList.add(loadedChrom);
             genotype = new Genotype(config, loadedChromList);
 
-
             //Start anew from generation 0
             ff.generation = 0;
+            folderName = 0;
         } else {
             for(int i = 0; i < chosenGifs.length; i++){
                 if(chosenGifs[i] == true) {
                     Chromosome chosenChrom = chroms.get(i);
                     chosenChrom.setFitnessValue(1000);
+                    System.out.println(chosenChrom.getId());
                 } else {
                     Chromosome notChosenChrom = chroms.get(i);
                     notChosenChrom.setFitnessValue(0);
@@ -271,6 +260,25 @@ public class UserTrainer implements Configurable {
 
         //Create chromosome from XML string
         loadedChrom = FilePersistence.chromosomeFromXml(config, sb.toString());
+    }
+
+    /**
+     * Save the chromosome in the specified path
+     */
+    public void saveChromosome(Chromosome c, File file) throws Exception {
+        db.storeToFolder(c, file.getAbsolutePath());
+    }
+
+    /**
+     * Makes a new random genotype to start a new run from
+     * @throws InvalidConfigurationException If config doesn't work with the genotype
+     */
+    public void newRun() throws InvalidConfigurationException {
+        //Start anew from generation 0
+        ff.generation = 0;
+        folderName = 0;
+
+        genotype = Genotype.randomInitialGenotype(config);
     }
 
     /**
