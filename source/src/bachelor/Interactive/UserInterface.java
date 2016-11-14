@@ -1,19 +1,10 @@
-package bachelor.Interactive;
+package bachelor.interactive;
 
 import javafx.application.Application;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableBooleanValue;
-import javafx.beans.value.ObservableValue;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -22,14 +13,11 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
-import javafx.stage.StageStyle;
 import org.jgap.Chromosome;
-import org.jgap.Genotype;
+import org.jgap.Configuration;
 
 import java.io.File;
 
@@ -40,10 +28,11 @@ public class UserInterface extends Application {
     private BorderPane root;
     private GridPane gp;
     private Pane cp;
-    private UserTrainer UT;
     private Button[] gifButtons;
     private Image[] gifs;
     private boolean[] chosenGifs;
+
+    private UserTrainer UT;
 
     private int amountOfChosen = 0;
 
@@ -256,9 +245,9 @@ public class UserInterface extends Application {
                                 }
                             }
 
-                            Chromosome c = (Chromosome) UT.genotype.getChromosomes().get(saveChromosome);
+                            Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(saveChromosome);
 
-                            UT.saveChromosome(c, file);
+                            UT.saveChromosome(chrom, file);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -277,6 +266,7 @@ public class UserInterface extends Application {
                 if(file != null) {
                     try {
                         UT.loadChromosome(file);
+                        UT.setGeneration(file);
                         UT.breed(chosenGifs, true);
                         trainWithInteraction();
                     } catch (Exception e) {

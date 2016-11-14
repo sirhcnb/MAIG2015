@@ -1,4 +1,4 @@
-package bachelor.Interactive;
+package bachelor.interactive;
 
 import bachelor.FitnessFunction;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
@@ -64,7 +64,7 @@ public class UserTrainer implements Configurable {
     private double thresholdFitness = 0.0d;
     private int maxFitness = 0;
 
-    private FilePersistenceMario db = null;
+    private InteractiveFilePersistence db = null;
 
     //Finding best chromosome each generation
     static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
@@ -73,7 +73,7 @@ public class UserTrainer implements Configurable {
     private Chromosome loadedChrom;
 
     //For gif creation and handling in UserInterface
-    public int folderName = 0;
+    public int folderName;
     private static FitnessFunction ff = new FitnessFunction();
 
     /**
@@ -83,15 +83,16 @@ public class UserTrainer implements Configurable {
     public UserTrainer() throws Throwable {
         Properties props = new Properties("marioInteractive.properties");
 
+        folderName = 0;
+        ff.generation = 0;
+
         //Initialize User Trainer
         try {
             init(props);
+            ff.populationSize = populationSize;
         } catch (Throwable th) {
             System.out.println(th);
         }
-
-        ff.generation = 0;
-        ff.populationSize = populationSize;
     }
 
     /**
@@ -116,7 +117,7 @@ public class UserTrainer implements Configurable {
         config = new NeatConfiguration(props);
 
         // peristence
-        db = (FilePersistenceMario) props.singletonObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
+        db = (InteractiveFilePersistence) props.singletonObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
         numEvolutions = props.getIntProperty(NUM_GENERATIONS_KEY);
         targetFitness = props.getDoubleProperty(FITNESS_TARGET_KEY, 1.0d);
         thresholdFitness = props.getDoubleProperty(FITNESS_THRESHOLD_KEY, targetFitness);
@@ -225,10 +226,6 @@ public class UserTrainer implements Configurable {
             List<Chromosome> loadedChromList = new ArrayList<>();
             loadedChromList.add(loadedChrom);
             genotype = new Genotype(config, loadedChromList);
-
-            //Start anew from generation 0
-            ff.generation = 0;
-            folderName = 0;
         } else {
             for(int i = 0; i < chosenGifs.length; i++){
                 if(chosenGifs[i] == true) {
@@ -243,30 +240,6 @@ public class UserTrainer implements Configurable {
         }
 
         genotype.evolveGif();
-    }
-
-    /**
-     * Load in the chromosome and evolve to reproduce and populate according to this chromosome
-     */
-    public void loadChromosome(File file) throws Exception {
-        //Load in the whole XML file as one string
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String line;
-        StringBuilder sb = new StringBuilder();
-
-        while((line = br.readLine()) != null){
-            sb.append(line.trim());
-        }
-
-        //Create chromosome from XML string
-        loadedChrom = FilePersistence.chromosomeFromXml(config, sb.toString());
-    }
-
-    /**
-     * Save the chromosome in the specified path
-     */
-    public void saveChromosome(Chromosome c, File file) throws Exception {
-        db.storeToFolder(c, file.getAbsolutePath());
     }
 
     /**
@@ -287,5 +260,35 @@ public class UserTrainer implements Configurable {
      */
     public static FitnessFunction getFf() {
         return ff;
+    }
+
+    /**
+     * Loads a chromosome from a XML file
+     * @param file To get the path in which we will load the chromosome
+     * @throws Exception If I/O fails
+     */
+    public void loadChromosome(File file) throws Exception {
+        loadedChrom = db.loadChromosome(config, file);
+    }
+
+    /**
+     * Saves the chosen chromosome to the specified path from the file
+     * @param c Chromosome to be saved
+     * @param file To get the path in which we will save the chromosome
+     * @throws Exception If I/O fails
+     */
+    public void saveChromosome(Chromosome c, File file) throws Exception {
+        db.saveChromosome(c, file, ff.generation);
+    }
+
+    /**
+     * Sets the generation received from a specific XML file
+     * @param file The XML file to get the generation from
+     * @throws Exception If I/O fails
+     */
+    public void setGeneration(File file) throws Exception {
+        int gen = db.getGenerationFromChromosome(file);
+        ff.generation = gen;
+        folderName = ff.generation;
     }
 }
