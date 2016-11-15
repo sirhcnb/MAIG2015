@@ -214,6 +214,8 @@ public class UserInterface extends Application {
         leaderBoard = new ListView<>();
         leaderBoard.setMinWidth(400);
 
+        leaderBoard.setItems(UT.getSi().importLeaderboard());
+
         cp.getChildren().add(leaderBoardLabel);
         cp.getChildren().add(leaderBoard);
 
