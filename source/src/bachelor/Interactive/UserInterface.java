@@ -1,5 +1,6 @@
 package bachelor.interactive;
 
+import com.anji.integration.XmlPersistableChromosome;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -58,7 +59,6 @@ public class UserInterface extends Application {
         primaryStage.setScene(new Scene(root, 1500, 770));
         primaryStage.setResizable(false);
         primaryStage.setTitle("Interactive Mario Trainer");
-        primaryStage.setAlwaysOnTop(true);
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
@@ -72,7 +72,7 @@ public class UserInterface extends Application {
     /**
      * Set up the basic UI that the user is to interact with.
      */
-    public void initialize(Stage primaryStage){
+    public void initialize(Stage primaryStage) {
         //Root pane of our scene (whole screen)
         root = new BorderPane();
 
@@ -217,6 +217,7 @@ public class UserInterface extends Application {
         //Add menu items to the menu bar menu
         menuStart.getItems().add(newRun);
 
+
         //Initialize menu for save and load, and add it to the menu bar
         Menu menuFile = new Menu("File");
         menuBar.getMenus().add(menuFile);
@@ -289,6 +290,54 @@ public class UserInterface extends Application {
         //Add menu items to the menu bar menu
         menuFile.getItems().add(save);
         menuFile.getItems().add(load);
+
+
+        //Initialize menu for server functionality
+        Menu menuServer = new Menu("Server");
+        menuBar.getMenus().add(menuServer);
+
+        //New upload menuItem
+        MenuItem upload = new MenuItem("Upload");
+        upload.setAccelerator(KeyCombination.keyCombination("Ctrl + U"));
+        upload.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+
+                if(amountOfChosen > 1) {
+                    alert.setTitle("Upload dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("You have selected several chromosomes to upload. " +
+                            "Please select only one!");
+
+                    alert.showAndWait();
+                } else if(amountOfChosen <= 0) {
+                    alert.setTitle("Upload dialog");
+                    alert.setHeaderText(null);
+                    alert.setContentText("Please select one chromosome to be uploaded!");
+
+                    alert.showAndWait();
+                } else {
+                    int uploadChromosome = 0;
+                    for(int i = 0; i < chosenGifs.length; i++) {
+                        if(chosenGifs[i] == true)
+                        {
+                            uploadChromosome = i;
+                            break;
+                        }
+                    }
+
+                    Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
+
+                    Stage stage = new Stage();
+                    UploadInterface upload = new UploadInterface(chrom, UT.getFf().generation);
+                    upload.start(stage);
+                }
+            }
+        });
+
+        //Add menu items to the menu bar menu
+        menuServer.getItems().add(upload);
 
         //Add menu bar to our root pane
         root.setTop(menuBar);

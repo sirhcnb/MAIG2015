@@ -263,6 +263,14 @@ public class UserTrainer implements Configurable {
     }
 
     /**
+     * Returns the file persistence object
+     * @return InteractiveFilePersistence object
+     */
+    public InteractiveFilePersistence getDb() {
+        return db;
+    }
+
+    /**
      * Loads a chromosome from a XML file
      * @param file To get the path in which we will load the chromosome
      * @throws Exception If I/O fails
