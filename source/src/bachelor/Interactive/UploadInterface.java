@@ -1,5 +1,6 @@
 package bachelor.interactive;
 
+import bachelor.csvFormat;
 import com.anji.integration.XmlPersistableChromosome;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -34,11 +35,13 @@ public class UploadInterface extends Application {
 
     //Chromosome and generation to be uploaded
     private ServerInterface si;
+    private csvFormat csv;
     private Chromosome uploadChrom;
     private int generation;
 
-    public UploadInterface(ServerInterface si, Chromosome uploadChrom, int generation) {
+    public UploadInterface(ServerInterface si, csvFormat csv, Chromosome uploadChrom, int generation) {
         this.si = si;
+        this.csv = csv;
         this.uploadChrom = uploadChrom;
         this.generation = generation;
     }
@@ -116,9 +119,10 @@ public class UploadInterface extends Application {
                     System.out.println("Generation: " + generation + '\n');
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
+                    System.out.println("Gen-Fit: " + csv.getFinalString().toString()); //TODO: call writeToString method
 
                     //TODO: access gif and genfit and add as parameters
-                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), "test");
+                    //si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString());
 
                 }
 

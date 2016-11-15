@@ -71,6 +71,7 @@ public class UserTrainer implements Configurable {
 
     //Store best fitness for each generation
     private ArrayList<Integer> bestFitness;
+
     private csvFormat csv;
 
     //The loaded chromosome by the user
@@ -285,6 +286,10 @@ public class UserTrainer implements Configurable {
      */
     public ServerInterface getSi() {
         return si;
+    }
+
+    public csvFormat getCsv() {
+        return csv;
     }
 
     /**

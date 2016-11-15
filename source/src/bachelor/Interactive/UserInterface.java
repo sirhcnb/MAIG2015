@@ -378,7 +378,7 @@ public class UserInterface extends Application {
 
                     Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
 
-                    UploadInterface upload = new UploadInterface(UT.getSi(), chrom, UT.getFf().generation);
+                    UploadInterface upload = new UploadInterface(UT.getSi(), UT.getCsv(), chrom, UT.getFf().generation);
 
                     Stage stage = new Stage();
                     upload.start(stage);
