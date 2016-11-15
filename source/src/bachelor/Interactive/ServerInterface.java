@@ -64,9 +64,6 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            //Statement statement = conn.createStatement();
-            //statement.executeUpdate("INSERT INTO cmario " + chrom + username + comment + gen + fitness + genfit);
-
             // set all the preparedstatement parameters
             PreparedStatement st = conn.prepareStatement(query);
             st.setString(1, chrom);
@@ -102,9 +99,6 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            //Statement statement = conn.createStatement();
-            //statement.executeUpdate("INSERT INTO cmario " + chrom + username + comment + gen + fitness + genfit);
-
             String query = "SELECT chrom FROM cmario WHERE ID=" + id;
 
             // create the java statement
@@ -113,22 +107,16 @@ public class ServerInterface extends InteractiveFilePersistence {
             // execute the query, and get a java resultset
             ResultSet rs = st.executeQuery(query);
 
-            // iterate through the java resultset
-            while (rs.next())
-            {
-                //int cid = rs.getInt("id");
-                //String firstName = rs.getString("first_name");
-                //String lastName = rs.getString("last_name");
-                //Date dateCreated = rs.getDate("date_created");
-                //boolean isAdmin = rs.getBoolean("is_admin");
-                //int numPoints = rs.getInt("num_points");
+            // show  resultset
+            String chrom = rs.getString("chrom");
+            String genfit = rs.getString("genfit");
+            int gen = rs.getInt("gen");
 
-                String chrom = rs.getString("chrom");
-                System.out.println(chrom);
+            //TODO: load into appropriate places
 
-                // print the results
-                //System.out.format("%s, %s, %s, %s, %s, %s\n", cid, firstName, lastName, dateCreated, isAdmin, numPoints);
-            }
+            // print the results
+            System.out.format("%s, %s, %s\n", chrom, genfit, gen);
+
             st.close();
 
         }
@@ -147,9 +135,6 @@ public class ServerInterface extends InteractiveFilePersistence {
     }
 
     public ObservableList<HBox> importLeaderboard() {
-        //Observablelist  -- FXCollections.observableArrayList
-        //id, username, comment, gen, fit, gif
-        //query -> hbox -> add til obsList rinse & repeat
         ObservableList<HBox> hBoxObservableList = FXCollections.observableArrayList();
 
         try {
@@ -175,11 +160,12 @@ public class ServerInterface extends InteractiveFilePersistence {
                 int gen = rs.getInt("gen");
                 int fitness = rs.getInt("fitness");
                 String comment = rs.getString("comment");
-                //Byte[] numPoints = rs.getBytes("gif");
+                //Byte[] numPoints = rs.getBytes("gif"); //TODO: implement gif
 
                 // print the results
                 System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
 
+                //TODO: preview/import button listener & restrict comment length
                 HBox hBox = new HBox();
                 hBox.setSpacing(20.0);
                 hBox.getChildren().addAll(new Label("Rank: " + Integer.toString(i)), new Label("Username: " + username), new Label("Generation: " + Integer.toString(gen)), new Label("Fitness: " + Integer.toString(fitness)), new Label("Comment: " + comment), new Button("Preview"), new Button("Import"));

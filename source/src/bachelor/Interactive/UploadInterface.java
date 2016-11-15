@@ -117,6 +117,7 @@ public class UploadInterface extends Application {
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
 
+                    //TODO: access gif and genfit and add as parameters
                     si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), "test");
 
                 }
