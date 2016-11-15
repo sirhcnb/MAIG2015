@@ -11,13 +11,13 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.jgap.Chromosome;
-import org.jgap.Configuration;
 
 import java.io.File;
 
@@ -121,7 +121,7 @@ public class UserInterface extends Application {
                 @Override
                 public void handle(MouseEvent event) {
                     if(chosenGifs[chosen] == false) {
-                        gifButtons[chosen].setStyle("-fx-border-color: blue");
+                        gifButtons[chosen].setStyle("-fx-border-color: blue; -fx-border-width: 3px");
                         chosenGifs[chosen] = true;
                         amountOfChosen++;
                         System.out.println("Chosen: " + chosen);
@@ -296,6 +296,7 @@ public class UserInterface extends Application {
             gifs[i] = null;
             gifs[i] = new Image(gifLocation);
             chosenGifs[i] = false;
+            amountOfChosen = 0;
             gifButtons[i].setGraphic(new ImageView(gifs[i]));
             gifButtons[i].setStyle("-fx-border-color: transparent");
         }
