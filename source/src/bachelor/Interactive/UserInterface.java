@@ -1,6 +1,7 @@
 package bachelor.interactive;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
@@ -11,14 +12,15 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
+import javax.swing.*;
 import java.io.File;
 
 /**
@@ -56,6 +58,14 @@ public class UserInterface extends Application {
         primaryStage.setScene(new Scene(root, 1500, 770));
         primaryStage.setResizable(false);
         primaryStage.setTitle("Interactive Mario Trainer");
+        primaryStage.setAlwaysOnTop(true);
+        primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            @Override
+            public void handle(WindowEvent event) {
+                Platform.exit();
+                System.exit(0);
+            }
+        });
         primaryStage.show();
     }
 
