@@ -117,7 +117,7 @@ public class UploadInterface extends Application {
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
 
-                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, 0, "test");
+                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), "test");
 
                 }
 
