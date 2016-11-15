@@ -65,6 +65,7 @@ public class UserTrainer implements Configurable {
     private int maxFitness = 0;
 
     private InteractiveFilePersistence db = null;
+    private ServerInterface si = new ServerInterface();
 
     //Finding best chromosome each generation
     static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
@@ -268,6 +269,14 @@ public class UserTrainer implements Configurable {
      */
     public InteractiveFilePersistence getDb() {
         return db;
+    }
+
+    /**
+     * Returns the server persistence object
+     * @return ServerInterface object
+     */
+    public ServerInterface getSi() {
+        return si;
     }
 
     /**

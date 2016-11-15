@@ -33,10 +33,12 @@ public class UploadInterface extends Application {
     private TextField commentText;
 
     //Chromosome and generation to be uploaded
+    private ServerInterface si;
     private Chromosome uploadChrom;
     private int generation;
 
-    public UploadInterface(Chromosome uploadChrom, int generation) {
+    public UploadInterface(ServerInterface si, Chromosome uploadChrom, int generation) {
+        this.si = si;
         this.uploadChrom = uploadChrom;
         this.generation = generation;
     }
@@ -114,6 +116,9 @@ public class UploadInterface extends Application {
                     System.out.println("Generation: " + generation + '\n');
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
+
+                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, 0, "test");
+
                 }
 
                 stage.close();
