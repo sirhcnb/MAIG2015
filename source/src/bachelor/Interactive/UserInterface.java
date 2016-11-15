@@ -1,12 +1,14 @@
 package bachelor.interactive;
 
-import com.anji.integration.XmlPersistableChromosome;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -15,13 +17,13 @@ import javafx.scene.input.KeyCombination;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
-import javax.swing.*;
 import java.io.File;
 
 /**
@@ -30,10 +32,20 @@ import java.io.File;
 public class UserInterface extends Application {
     private BorderPane root;
     private GridPane gp;
-    private Pane cp;
+    private VBox cp;
+    private VBox rp;
+
+    //Left pane
     private Button[] gifButtons;
     private Image[] gifs;
     private boolean[] chosenGifs;
+
+    //Center pane
+    private Image previewImage;
+    private ImageView previewView;
+
+    //Right pane
+    private ListView<HBox> leaderBoard;
 
     private UserTrainer UT;
 
@@ -56,7 +68,7 @@ public class UserInterface extends Application {
             System.out.println(th);
         }
 
-        primaryStage.setScene(new Scene(root, 1500, 770));
+        primaryStage.setScene(new Scene(root, 1700, 800));
         primaryStage.setResizable(false);
         primaryStage.setTitle("Interactive Mario Trainer");
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -87,14 +99,21 @@ public class UserInterface extends Application {
         root.setLeft(gp);
 
         //Initialize center pane
-        cp = new Pane();
+        cp = new VBox();
 
-        //Add our pane to our root pane in the center side
+        //Add our VBox to our root pane in the center side
         root.setCenter(cp);
 
-        //Disable gridpane and center pane until an action has been taken.
+        //Initialize right pane
+        rp = new VBox();
+
+        //Add our VBox to our root pane in the right side
+        root.setRight(rp);
+
+        //Disable gridpane, center pane and right pane until an action has been taken.
         gp.setDisable(true);
         cp.setDisable(true);
+        rp.setDisable(true);
 
         //Initialize array for gifs and buttons
         gifs = new Image[UT.getFf().populationSize];
@@ -104,9 +123,9 @@ public class UserInterface extends Application {
         //Initialize menu
         initializeMenu(primaryStage);
 
-        //Initialize buttons
+        //Initialize buttons, center
         initializeGifButtons();
-        initializeBreedButton();
+        initializeCenter();
     }
 
     /**
@@ -168,9 +187,7 @@ public class UserInterface extends Application {
                 gp.add(gifButtons[i], columnIndex, rowIndex);
             }
         }
-    }
 
-    public void initializeBreedButton() {
         //Initialize breed button and add listener to do breed functionality
         Button breed = new Button("Breed");
         breed.setOnAction(new EventHandler<ActionEvent>() {
@@ -186,7 +203,37 @@ public class UserInterface extends Application {
         });
         breed.setLayoutX(0);
         breed.setLayoutY(0);
-        cp.getChildren().add(breed);
+        breed.setMinWidth(320);
+        gp.add(breed, 1, 4);
+    }
+
+    public void initializeCenter() {
+        //Initialize leaderboard
+        Label leaderBoardLabel = new Label("Leaderboard:");
+
+        leaderBoard = new ListView<>();
+        leaderBoard.setMinWidth(400);
+
+        cp.getChildren().add(leaderBoardLabel);
+        cp.getChildren().add(leaderBoard);
+
+
+        //Initialize preview
+        Label previewLabel = new Label("Preview:");
+        previewLabel.setTranslateY(50);
+
+        previewView = new ImageView();
+        Button previewButton = new Button("");
+        previewButton.setMinHeight(240);
+        previewButton.setMinWidth(320);
+        previewButton.setGraphic(previewView);
+        previewButton.setDisable(true);
+        previewButton.setTranslateY(50);
+
+        cp.setAlignment(Pos.TOP_CENTER);
+
+        cp.getChildren().add(previewLabel);
+        cp.getChildren().add(previewButton);
     }
 
     public void initializeMenu(Stage primaryStage) {
