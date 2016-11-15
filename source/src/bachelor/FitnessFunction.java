@@ -37,7 +37,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
 
     //Info on stage
     protected byte[][] mergedObservation;
-    public String levelOptions = "-vis off -mix 16 -miy 223"; // see class ParameterContainer.java for each flag
+    public String levelOptions; // see class ParameterContainer.java for each flag
 
     //Control buttons
     boolean[] actions = new boolean[Environment.numberOfKeys];
