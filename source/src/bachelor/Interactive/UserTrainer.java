@@ -1,6 +1,7 @@
 package bachelor.interactive;
 
 import bachelor.FitnessFunction;
+import bachelor.csvFormat;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
@@ -64,11 +65,13 @@ public class UserTrainer implements Configurable {
     private double thresholdFitness = 0.0d;
     private int maxFitness = 0;
 
+    //Persistence objects
     private InteractiveFilePersistence db = null;
     private ServerInterface si = new ServerInterface();
 
-    //Finding best chromosome each generation
-    static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
+    //Store best fitness for each generation
+    private ArrayList<Integer> bestFitness;
+    private csvFormat csv;
 
     //The loaded chromosome by the user
     private Chromosome loadedChrom;
@@ -86,6 +89,9 @@ public class UserTrainer implements Configurable {
 
         folderName = 0;
         ff.generation = 0;
+
+        bestFitness = new ArrayList<>();
+        csv = new csvFormat(ff.generation);
 
         //Initialize User Trainer
         try {
@@ -204,6 +210,8 @@ public class UserTrainer implements Configurable {
             GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
         }
 
+        bestFitness.add(genotype.getFittestChromosome().getFitnessValue());
+
         //Keep track of current generation (for server part and comparison)
         ff.generation++;
         System.out.println("Generation after record: " + ff.generation + " | " + ff);
@@ -286,6 +294,8 @@ public class UserTrainer implements Configurable {
      */
     public void loadChromosome(File file) throws Exception {
         loadedChrom = db.loadChromosome(config, file);
+        csv.loadCSVFromChromosome(loadedChrom.getId());
+        csv.setOldGeneration(ff.generation);
     }
 
     /**
@@ -296,6 +306,7 @@ public class UserTrainer implements Configurable {
      */
     public void saveChromosome(Chromosome c, File file) throws Exception {
         db.saveChromosome(c, file, ff.generation);
+        csv.generateCsvFile(c.getId(), bestFitness);
     }
 
     /**

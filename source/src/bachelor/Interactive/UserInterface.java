@@ -323,8 +323,8 @@ public class UserInterface extends Application {
                 File file = fileChooser.showOpenDialog(primaryStage);
                 if(file != null) {
                     try {
-                        UT.loadChromosome(file);
                         UT.setGeneration(file);
+                        UT.loadChromosome(file);
                         UT.breed(chosenGifs, true);
                         trainWithInteraction();
                     } catch (Exception e) {
@@ -376,8 +376,9 @@ public class UserInterface extends Application {
 
                     Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
 
-                    Stage stage = new Stage();
                     UploadInterface upload = new UploadInterface(UT.getSi(), chrom, UT.getFf().generation);
+
+                    Stage stage = new Stage();
                     upload.start(stage);
                 }
             }
