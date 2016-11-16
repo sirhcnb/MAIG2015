@@ -1,9 +1,8 @@
 package bachelor.interactive;
 
-import bachelor.csvFormat;
+import bachelor.CsvFormat;
 import com.anji.integration.XmlPersistableChromosome;
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -18,6 +17,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import org.jgap.Chromosome;
+
+import java.util.ArrayList;
 
 /**
  * Created by Pierre on 15-11-2016.
@@ -35,11 +36,11 @@ public class UploadInterface extends Application {
 
     //Chromosome and generation to be uploaded
     private ServerInterface si;
-    private csvFormat csv;
+    private CsvFormat csv;
     private Chromosome uploadChrom;
     private int generation;
 
-    public UploadInterface(ServerInterface si, csvFormat csv, Chromosome uploadChrom, int generation) {
+    public UploadInterface(ServerInterface si, CsvFormat csv, Chromosome uploadChrom, int generation) {
         this.si = si;
         this.csv = csv;
         this.uploadChrom = uploadChrom;
@@ -119,7 +120,7 @@ public class UploadInterface extends Application {
                     System.out.println("Generation: " + generation + '\n');
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
-                    System.out.println("Gen-Fit: " + csv.getFinalString().toString()); //TODO: call writeToString method
+                    System.out.println("Gen-Fit: " + csv.getFinalString().toString());
 
                     //TODO: access gif and genfit and add as parameters
                     //si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString());

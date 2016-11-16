@@ -1,14 +1,12 @@
 package bachelor.interactive;
 
 import bachelor.FitnessFunction;
-import bachelor.csvFormat;
-import ch.idsia.benchmark.mario.environments.MarioEnvironment;
+import bachelor.CsvFormat;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
 import com.anji.neat.Evolver;
 import com.anji.neat.NeatConfiguration;
-import com.anji.persistence.FilePersistence;
 import com.anji.persistence.Persistence;
 import com.anji.run.Run;
 import com.anji.util.Configurable;
@@ -21,11 +19,8 @@ import org.jgap.Chromosome;
 import org.jgap.Genotype;
 import org.jgap.InvalidConfigurationException;
 import org.jgap.event.GeneticEvent;
-import own.FilePersistenceMario;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,10 +64,8 @@ public class UserTrainer implements Configurable {
     private InteractiveFilePersistence db = null;
     private ServerInterface si = new ServerInterface();
 
-    //Store best fitness for each generation
-    private ArrayList<Integer> bestFitness;
-
-    private csvFormat csv;
+    //Object to save as and load from csv format
+    private CsvFormat csv;
 
     //The loaded chromosome by the user
     private Chromosome loadedChrom;
@@ -91,8 +84,7 @@ public class UserTrainer implements Configurable {
         folderName = 0;
         ff.generation = 0;
 
-        bestFitness = new ArrayList<>();
-        csv = new csvFormat(ff.generation);
+        csv = new CsvFormat(ff.generation);
 
         //Initialize User Trainer
         try {
@@ -211,7 +203,7 @@ public class UserTrainer implements Configurable {
             GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
         }
 
-        bestFitness.add(genotype.getFittestChromosome().getFitnessValue());
+        csv.writeSingleToString(genotype.getFittestChromosome().getFitnessValue(), ff.generation);
 
         //Keep track of current generation (for server part and comparison)
         ff.generation++;
@@ -288,7 +280,11 @@ public class UserTrainer implements Configurable {
         return si;
     }
 
-    public csvFormat getCsv() {
+    /**
+     * Returns the csvFormat object
+     * @return csvFormat object
+     */
+    public CsvFormat getCsv() {
         return csv;
     }
 
@@ -311,7 +307,7 @@ public class UserTrainer implements Configurable {
      */
     public void saveChromosome(Chromosome c, File file) throws Exception {
         db.saveChromosome(c, file, ff.generation);
-        csv.generateCsvFile(c.getId(), bestFitness);
+        csv.generateCsvFile(c.getId());
     }
 
     /**
