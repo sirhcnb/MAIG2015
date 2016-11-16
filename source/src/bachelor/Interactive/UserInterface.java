@@ -25,6 +25,8 @@ import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
 import java.io.File;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * Created by Pierre on 30-10-2016.
@@ -220,6 +222,21 @@ public class UserInterface extends Application {
 
         cp.getChildren().add(leaderBoardLabel);
         cp.getChildren().add(leaderBoard);
+
+
+        //Make a timer task to update leaderboard every minute
+        Timer timer = new Timer();
+        timer.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                Platform.runLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        leaderBoard.setItems(si.importLeaderboard());
+                    }
+                });
+            }
+        }, 0, 60000);
 
 
         //Initialize preview
