@@ -43,8 +43,8 @@ public class UserInterface extends Application {
     private boolean[] chosenGifs;
 
     //Center pane
+    private Button previewButton;
     private Image previewImage;
-    private ImageView previewView;
 
     //Right pane
     private ListView<HBox> leaderBoard;
@@ -243,13 +243,28 @@ public class UserInterface extends Application {
         Label previewLabel = new Label("Preview:");
         previewLabel.setTranslateY(50);
 
-        previewView = new ImageView();
-        Button previewButton = new Button("");
+        previewButton = new Button("");
         previewButton.setMinHeight(240);
         previewButton.setMinWidth(320);
-        previewButton.setGraphic(previewView);
-        previewButton.setDisable(true);
+        previewButton.setGraphic(new ImageView());
         previewButton.setTranslateY(50);
+
+        previewButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                String path = null;
+                try {
+                    path = UT.runSinglePreview();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                if(path != null)
+                {
+                    setPreview(path);
+                }
+            }
+        });
 
         cp.setAlignment(Pos.TOP_CENTER);
 
@@ -428,6 +443,52 @@ public class UserInterface extends Application {
             gifButtons[i].setGraphic(new ImageView(gifs[i]));
             gifButtons[i].setStyle("-fx-border-color: transparent");
         }
+    }
+
+    /**
+     * After running preview evaluation, set preview button to show the preview gif.
+     * @param gifLocation Path of our gif
+     */
+    public void setPreview(String gifLocation) {
+        previewImage = null;
+        previewImage = new Image(gifLocation);
+        previewButton.setGraphic(new ImageView(previewImage));
+    }
+
+    /**
+     * Run a preview evaluation and set preview button when done
+     */
+    public void runPreview() {
+        Task<String> task = new Task<String>() {
+            @Override
+            public String call() throws Exception {
+                root.getTop().setDisable(true);
+                root.getLeft().setDisable(true);
+                root.getCenter().setDisable(true);
+
+                String path;
+                try {
+                    path = UT.runSinglePreview();
+                    return path;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }
+        };
+
+        task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
+            @Override
+            public void handle(WorkerStateEvent e) {
+                root.getTop().setDisable(false);
+                root.getLeft().setDisable(false);
+                root.getCenter().setDisable(false);
+
+                setPreview(task.getValue());
+            }
+        });
+
+        new Thread(task).start();
     }
 
     /**

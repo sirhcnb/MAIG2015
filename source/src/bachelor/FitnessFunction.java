@@ -152,6 +152,8 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             } else if(evaluationType.equals("Interaction"))
             {
                 fitness = runInteraction(activator, delayRecording);
+            } else if(evaluationType.equals("Preview")) {
+                runSinglePreview(activator, delayRecording);
             } else
             {
                 System.out.println("No chromosome evaluation for this type yet!: " + evaluationType);
@@ -164,6 +166,59 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         }
 
         return fitness;
+    }
+
+    /**
+     * Single preview run!!
+     */
+    private void runSinglePreview(Activator activator, int delayRecording) {
+        //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
+        int longestDistance = 0;
+        int currentDistance = environment.getEvaluationInfo().distancePassedCells;
+
+        Timer t = new Timer();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                timer++;
+            }
+        };
+
+        //Start timer, with 1 second delay and increment each second
+        t.scheduleAtFixedRate(task, 1000, 1000);
+
+        //Run preview
+        while(!environment.isLevelFinished() && timer < 3){
+            if(longestDistance < currentDistance) {
+                longestDistance = currentDistance;
+                timer = 0;
+            }
+
+            //Begin recording after some seconds
+            if(environment.getEvaluationInfo().timeSpent >= ( delayRecording / 1000 ) )
+                environment.recordMario(true);
+
+            //Set all actions to false
+            resetActions();
+
+            //Get inputs
+            double[] networkInput = marioInputs.getAllInputs();
+
+            //Feed the inputs to the network and translate it
+            double[] networkOutput = activator.next(networkInput);
+            boolean[] actions = getAction(networkOutput);
+
+            //Perform action
+            environment.performAction(actions);
+            makeTick();
+
+            currentDistance = environment.getEvaluationInfo().distancePassedCells;
+        }
+
+        //Cancel timer in current prewview, as we got out of the preview while loop
+        timer = 0;
+        t.cancel();
+        t.purge();
     }
 
     /**

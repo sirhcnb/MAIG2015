@@ -161,6 +161,52 @@ public class ServerInterface extends InteractiveFilePersistence {
         }
     }
 
+    public void importPreviewChrom(int id) {
+        try {
+            Class.forName("com.mysql.jdbc.Driver").newInstance();
+            conn = DriverManager.getConnection(url, sqlUserName, password);
+
+            System.out.println("Database connection established");
+
+            String query = "SELECT chrom FROM cmario WHERE ID=" + id;
+
+            // create the java statement
+            Statement st = conn.createStatement();
+
+            // execute the query, and get a java resultset
+            ResultSet rs = st.executeQuery(query);
+
+            //Move to next result
+            rs.next();
+
+            // show  resultset
+            String chrom = rs.getString("chrom");
+
+            //Load into UserTrainer
+            UT.loadPreviewChromosome(chrom);
+
+            System.out.println(UT.getPreviewChrom().getId());
+
+            // print the results
+            System.out.format("%s\n", chrom);
+
+            st.close();
+
+        }
+        catch (Exception e) {
+            System.err.println("Cannot connect to database server");
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.close();
+                    System.out.println("Database Connection Terminated");
+                } catch (Exception e) {}
+            }
+        }
+    }
+
     public ObservableList<HBox> importLeaderboard() {
         ObservableList<HBox> hBoxObservableList = FXCollections.observableArrayList();
 
@@ -221,6 +267,17 @@ public class ServerInterface extends InteractiveFilePersistence {
                     }
                 });
 
+                //Listener on preview button
+                Button previewButton = new Button("Preview");
+                previewButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        importPreviewChrom(Integer.parseInt(hBox.getId()));
+
+                        UI.runPreview();
+                    }
+                });
+
                 //Listener on import button to get everything necessary from the database
                 Button impButton = new Button("Import");
                 impButton.setOnAction(new EventHandler<ActionEvent>() {
@@ -231,7 +288,7 @@ public class ServerInterface extends InteractiveFilePersistence {
                 });
 
                 hBox.setId(Integer.toString(cid)); //Has been added. ID of the hbox equals ID from database entry
-                hBox.getChildren().addAll(new Label("Rank: " + Integer.toString(i)), new Label("Username: " + username), new Label("Generation: " + Integer.toString(gen)), new Label("Fitness: " + Integer.toString(fitness)), commentLabel, new Button("Preview"), impButton);
+                hBox.getChildren().addAll(new Label("Rank: " + Integer.toString(i)), new Label("Username: " + username), new Label("Generation: " + Integer.toString(gen)), new Label("Fitness: " + Integer.toString(fitness)), commentLabel, previewButton, impButton);
                 hBoxObservableList.add(hBox);
                 i++;
             }

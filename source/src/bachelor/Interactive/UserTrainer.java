@@ -21,6 +21,9 @@ import org.jgap.InvalidConfigurationException;
 import org.jgap.event.GeneticEvent;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,6 +71,13 @@ public class UserTrainer implements Configurable {
 
     //The loaded chromosome by the user
     private Chromosome loadedChrom;
+
+    public Chromosome getPreviewChrom() {
+        return previewChrom;
+    }
+
+    //The preview chromosome from the server
+    private Chromosome previewChrom;
 
     //For gif creation and handling in UserInterface
     public int folderName;
@@ -166,6 +176,44 @@ public class UserTrainer implements Configurable {
         }
     }
 
+
+    /**
+     * Returns the path to the preview gif when done generating it. If already exist, just return
+     * the path to the gif.
+     * @return Path to preview gif.
+     */
+    public String runSinglePreview() throws Exception {
+        String evaluationType = "Preview";
+
+        logger.info( "Preview: Start" );
+
+        //Create gif folder for previews
+        Path previewPath = Paths.get((System.getProperty("user.home") + "/Documents/previews/"));
+        if(!Files.exists(previewPath)) {
+            new File(previewPath.toString()).mkdirs();
+        }
+
+        //Get the gif if it exists else create a gif in the preview folder
+        File chromFile = null;
+        if(previewChrom != null)
+        {
+            chromFile = new File(previewPath.toString() + "/" + previewChrom.getId().toString() + ".gif");
+
+            if(!chromFile.exists()) {
+                ff.evaluateChromosome(previewChrom, evaluationType);
+                GifSequenceWriter.fileNumber = (int) (long) previewChrom.getId();
+                GifSequenceWriter.createGIF(previewPath.toString() + "/");
+            }
+        }
+
+        logger.info( "Preview: Stop" );
+
+        if(chromFile != null) {
+            return "file:///" + (chromFile.getAbsoluteFile().toString());
+        }
+
+        return null;
+    }
 
     /**
      * Method being used to train according to users interaction with the UI.
@@ -289,11 +337,25 @@ public class UserTrainer implements Configurable {
         csv.loadCSVFromChromosome(loadedChrom.getId());
     }
 
+    /**
+     * Loads a chromosome from the server
+     * @param xmlFormat The chromosome to be loaded
+     * @throws Exception If connection fails
+     */
     public void loadChromosomeServer(String xmlFormat) throws Exception {
         loadedChrom = db.loadChromosomeServer(config, xmlFormat);
 
         //DEBUG!!
         //System.out.println(loadedChrom.getId());
+    }
+
+    /**
+     * Loads a chromosome from the server into the preview
+     * @param xmlFormat The chromosome to be previewed
+     * @throws Exception If connection fails
+     */
+    public void loadPreviewChromosome(String xmlFormat) throws Exception {
+        previewChrom = db.loadChromosomeServer(config, xmlFormat);
     }
 
     /**
