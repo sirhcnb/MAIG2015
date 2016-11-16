@@ -1,10 +1,18 @@
 package bachelor.interactive;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import org.jgap.Chromosome;
+import org.jgap.Configuration;
 
 import java.sql.*;
 
@@ -12,13 +20,21 @@ import java.sql.*;
  * Created by chris on 15-11-2016.
  */
 public class ServerInterface extends InteractiveFilePersistence {
+    private UserTrainer UT;
+    private UserInterface UI;
+
     Connection conn = null;
     String sqlUserName = "collmariouser";
     String password = "qwerty12345";
     String url = "jdbc:mysql://178.62.20.78:3306/collmario";
 
+    public ServerInterface(UserTrainer UT, UserInterface UI) {
+        this.UT = UT;
+        this.UI = UI;
+    }
+
     // for testing the connection
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Connection conn = null;
 
         try {
@@ -46,7 +62,7 @@ public class ServerInterface extends InteractiveFilePersistence {
                 } catch (Exception e) {}
             }
         }
-    }
+    }*/
 
     public void uploadToDatabase(String chrom, String username, String comment, int gen, int fitness, String genfit) {
         String query = "INSERT INTO cmario ("
@@ -99,7 +115,7 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT chrom FROM cmario WHERE ID=" + id;
+            String query = "SELECT chrom, genfit, gen FROM cmario WHERE ID=" + id;
 
             // create the java statement
             Statement st = conn.createStatement();
@@ -107,12 +123,22 @@ public class ServerInterface extends InteractiveFilePersistence {
             // execute the query, and get a java resultset
             ResultSet rs = st.executeQuery(query);
 
+            //Move to next result
+            rs.next();
+
             // show  resultset
             String chrom = rs.getString("chrom");
-            String genfit = rs.getString("genfit");
+            //String genfit = rs.getString("genfit");
             int gen = rs.getInt("gen");
 
-            //TODO: load into appropriate places
+            //TEST TEST TEST!!!
+            String genfit = "id, fitness\n" +
+                    "0;6";
+
+            //TODO: load into appropriate places (Done, need confirmation!)
+            UT.loadChromosomeServer(chrom);
+            UT.setGenerationServer(gen);
+            UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results
             System.out.format("%s, %s, %s\n", chrom, genfit, gen);
@@ -129,6 +155,11 @@ public class ServerInterface extends InteractiveFilePersistence {
                 try {
                     conn.close();
                     System.out.println("Database Connection Terminated");
+
+                    //Start evaluation of the received chromosome
+                    boolean[] array = new boolean[0]; //Empty boolean array, for breeding only on loaded chromosome
+                    UT.breed(array, true);
+                    UI.trainWithInteraction();
                 } catch (Exception e) {}
             }
         }
@@ -165,10 +196,45 @@ public class ServerInterface extends InteractiveFilePersistence {
                 // print the results
                 System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
 
-                //TODO: preview/import button listener & restrict comment length
+                //TODO: preview/import button listener. (Import button listener done, need confirmation!)
+                //TODO: Restrict comment length (Done, need confirmation!)
                 HBox hBox = new HBox();
                 hBox.setSpacing(20.0);
-                hBox.getChildren().addAll(new Label("Rank: " + Integer.toString(i)), new Label("Username: " + username), new Label("Generation: " + Integer.toString(gen)), new Label("Fitness: " + Integer.toString(fitness)), new Label("Comment: " + comment), new Button("Preview"), new Button("Import"));
+
+                //Limit content of the label to show only a part of the comment (30 characters)
+                Label commentLabel = new Label();
+                commentLabel.textProperty().addListener(new ChangeListener<String>() {
+                    @Override
+                    public void changed(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+                        if(commentLabel.getText().length() > 30) {
+                            String commentPart = commentLabel.getText().substring(0, 30);
+                            commentLabel.setText(commentPart + "...");
+                        }
+                    }
+                });
+                commentLabel.setText("Comment: " + comment);
+
+                //On hover will show a tooltip containing the whole comment
+                commentLabel.setOnMouseEntered(new EventHandler<MouseEvent>() {
+                    @Override
+                    public void handle(MouseEvent event) {
+                        Tooltip commentTip = new Tooltip();
+                        commentTip.setText(comment);
+                        commentLabel.setTooltip(commentTip);
+                    }
+                });
+
+                //Listener on import button to get everything necessary from the database
+                Button impButton = new Button("Import");
+                impButton.setOnAction(new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent event) {
+                        importFromDatabase(Integer.parseInt(hBox.getId()));
+                    }
+                });
+
+                hBox.setId(Integer.toString(cid)); //Has been added. ID of the hbox equals ID from database entry
+                hBox.getChildren().addAll(new Label("Rank: " + Integer.toString(i)), new Label("Username: " + username), new Label("Generation: " + Integer.toString(gen)), new Label("Fitness: " + Integer.toString(fitness)), commentLabel, new Button("Preview"), impButton);
                 hBoxObservableList.add(hBox);
                 i++;
             }
@@ -189,5 +255,4 @@ public class ServerInterface extends InteractiveFilePersistence {
         }
         return hBoxObservableList;
     }
-
 }

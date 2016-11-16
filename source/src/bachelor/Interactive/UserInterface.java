@@ -48,6 +48,7 @@ public class UserInterface extends Application {
     private ListView<HBox> leaderBoard;
 
     private UserTrainer UT;
+    private ServerInterface si;
 
     private int amountOfChosen = 0;
 
@@ -63,6 +64,7 @@ public class UserInterface extends Application {
     public void start(Stage primaryStage) {
         try {
             UT = new UserTrainer();
+            si = new ServerInterface(UT, this);
             initialize(primaryStage);
         } catch (Throwable th) {
             System.out.println(th);
@@ -112,7 +114,7 @@ public class UserInterface extends Application {
 
         //Disable gridpane, center pane and right pane until an action has been taken.
         gp.setDisable(true);
-        cp.setDisable(true);
+        //cp.setDisable(true);
         rp.setDisable(true);
 
         //Initialize array for gifs and buttons
@@ -214,7 +216,7 @@ public class UserInterface extends Application {
         leaderBoard = new ListView<>();
         leaderBoard.setMinWidth(400);
 
-        leaderBoard.setItems(UT.getSi().importLeaderboard());
+        leaderBoard.setItems(si.importLeaderboard());
 
         cp.getChildren().add(leaderBoardLabel);
         cp.getChildren().add(leaderBoard);
@@ -378,7 +380,7 @@ public class UserInterface extends Application {
 
                     Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
 
-                    UploadInterface upload = new UploadInterface(UT.getSi(), UT.getCsv(), chrom, UT.getFf().generation);
+                    UploadInterface upload = new UploadInterface(si, UT.getCsv(), chrom, UT.getFf().generation);
 
                     Stage stage = new Stage();
                     upload.start(stage);

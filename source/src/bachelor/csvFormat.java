@@ -19,11 +19,9 @@ public class CsvFormat {
     private final static String lineSeperator = "\n";
     private final static String fileHeader = "id, fitness";
 
-    private int oldGeneration;
-
     private StringBuilder finalString;
 
-    public CsvFormat(int oldGeneration) {
+    public CsvFormat() {
         Path csvPath = Paths.get((System.getProperty("user.home") + "/Documents/csv/"));
 
         if(!Files.exists(csvPath)) {
@@ -31,12 +29,6 @@ public class CsvFormat {
         }
 
         finalString = new StringBuilder();
-
-        this.oldGeneration = oldGeneration;
-        if(oldGeneration != 0)
-        {
-            oldGeneration++;
-        }
     }
 
     public void generateCsvFile(long chromID)
@@ -78,8 +70,12 @@ public class CsvFormat {
         }
     }
 
-    public void setOldGeneration(int oldGeneration) {
-        this.oldGeneration = oldGeneration;
+    public void loadCSVFromChromosomeServer(String csvFormat) {
+        finalString = new StringBuilder();
+        finalString.append(csvFormat);
+
+        //DEBUG!!
+        //System.out.println(finalString.toString());
     }
 
     public StringBuilder getFinalString() {

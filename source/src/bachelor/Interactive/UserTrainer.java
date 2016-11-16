@@ -62,7 +62,6 @@ public class UserTrainer implements Configurable {
 
     //Persistence objects
     private InteractiveFilePersistence db = null;
-    private ServerInterface si = new ServerInterface();
 
     //Object to save as and load from csv format
     private CsvFormat csv;
@@ -84,7 +83,7 @@ public class UserTrainer implements Configurable {
         folderName = 0;
         ff.generation = 0;
 
-        csv = new CsvFormat(ff.generation);
+        csv = new CsvFormat();
 
         //Initialize User Trainer
         try {
@@ -273,14 +272,6 @@ public class UserTrainer implements Configurable {
     }
 
     /**
-     * Returns the server persistence object
-     * @return ServerInterface object
-     */
-    public ServerInterface getSi() {
-        return si;
-    }
-
-    /**
      * Returns the csvFormat object
      * @return csvFormat object
      */
@@ -296,7 +287,13 @@ public class UserTrainer implements Configurable {
     public void loadChromosome(File file) throws Exception {
         loadedChrom = db.loadChromosome(config, file);
         csv.loadCSVFromChromosome(loadedChrom.getId());
-        csv.setOldGeneration(ff.generation);
+    }
+
+    public void loadChromosomeServer(String xmlFormat) throws Exception {
+        loadedChrom = db.loadChromosomeServer(config, xmlFormat);
+
+        //DEBUG!!
+        //System.out.println(loadedChrom.getId());
     }
 
     /**
@@ -319,5 +316,17 @@ public class UserTrainer implements Configurable {
         int gen = db.getGenerationFromChromosome(file);
         ff.generation = gen;
         folderName = ff.generation;
+    }
+
+    /**
+     * Sets the generation received from the server
+     * @param generation Generation received from the server when downloading
+     */
+    public void setGenerationServer(int generation) {
+        ff.generation = generation;
+        folderName = ff.generation;
+
+        //DEBUG
+        //System.out.println(ff.generation);
     }
 }

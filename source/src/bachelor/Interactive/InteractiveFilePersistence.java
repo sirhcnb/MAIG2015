@@ -39,6 +39,16 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
     }
 
     /**
+     * Load in the chosen chromosome from the server
+     * @param config Config file to make the chromosome object
+     * @param xmlFormat The xml format of our received chromosome
+     * @return The chromosome object
+     */
+    public Chromosome loadChromosomeServer(Configuration config, String xmlFormat) throws Exception {
+        return chromosomeFromXml(config, xmlFormat);
+    }
+
+    /**
      * Save the chromosome in the specified path
      */
     public void saveChromosome(Chromosome c, File file, int generation) throws Exception {
