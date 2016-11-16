@@ -128,12 +128,8 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             // show  resultset
             String chrom = rs.getString("chrom");
-            //String genfit = rs.getString("genfit");
+            String genfit = rs.getString("genfit");
             int gen = rs.getInt("gen");
-
-            //TEST TEST TEST!!!
-            String genfit = "id, fitness\n" +
-                    "0;6";
 
             //TODO: load into appropriate places (Done, need confirmation!)
             UT.loadChromosomeServer(chrom);
@@ -183,9 +179,9 @@ public class ServerInterface extends InteractiveFilePersistence {
             ResultSet rs = st.executeQuery(query);
 
             // iterate through the java resultset
+            int i = 1;
             while (rs.next())
             {
-                int i = 1;
                 int cid = rs.getInt("id");
                 String username = rs.getString("username");
                 int gen = rs.getInt("gen");
@@ -196,7 +192,8 @@ public class ServerInterface extends InteractiveFilePersistence {
                 // print the results
                 System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
 
-                //TODO: preview/import button listener. (Import button listener done, need confirmation!)
+                //TODO: preview button listener
+                //TODO: import button listener. (Done, need confirmation!)
                 //TODO: Restrict comment length (Done, need confirmation!)
                 HBox hBox = new HBox();
                 hBox.setSpacing(20.0);

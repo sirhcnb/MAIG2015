@@ -123,7 +123,7 @@ public class UploadInterface extends Application {
                     System.out.println("Gen-Fit: " + csv.getFinalString().toString());
 
                     //TODO: access gif and genfit and add as parameters
-                    //si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString());
+                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString());
 
                 }
 
