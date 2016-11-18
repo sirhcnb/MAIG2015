@@ -74,7 +74,7 @@ public class ServerInterface extends InteractiveFilePersistence {
                 + " fitness,"
                 + " genfit,"
                 + " forkedFrom ) VALUES ("
-                + "?, ?, ?, ?, null, ?, ?, null)";
+                + "?, ?, ?, ?, null, ?, ?, ?)";
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(url, sqlUserName, password);
