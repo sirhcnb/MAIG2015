@@ -216,7 +216,7 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT * FROM cmario ORDER BY fitness DESC LIMIT 10";
+            String query = "SELECT * FROM cmario ORDER BY fitness DESC LIMIT 20";
 
             // create the java statement
             Statement st = conn.createStatement();
