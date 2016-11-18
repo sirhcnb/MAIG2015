@@ -132,7 +132,7 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
 
         if(forksFrom.getLength() != 0) {
             String forkedFrom = doc.getDocumentElement().getElementsByTagName("forkedFrom").item(0).getAttributes().getNamedItem("id").getNodeValue();
-            genFork.setGeneration(Integer.parseInt(forkedFrom));
+            genFork.setForkedFrom(Integer.parseInt(forkedFrom));
         }
 
         return genFork;
