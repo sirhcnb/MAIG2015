@@ -64,7 +64,7 @@ public class ServerInterface extends InteractiveFilePersistence {
         }
     }*/
 
-    public void uploadToDatabase(String chrom, String username, String comment, int gen, int fitness, String genfit) {
+    public void uploadToDatabase(String chrom, String username, String comment, int gen, int fitness, String genfit, int forkedFrom) {
         String query = "INSERT INTO cmario ("
                 + " chrom,"
                 + " username,"
@@ -72,8 +72,9 @@ public class ServerInterface extends InteractiveFilePersistence {
                 + " gen,"
                 + " id,"
                 + " fitness,"
-                + " genfit ) VALUES ("
-                + "?, ?, ?, ?, null, ?, ?)";
+                + " genfit,"
+                + " forkedFrom ) VALUES ("
+                + "?, ?, ?, ?, null, ?, ?, null)";
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(url, sqlUserName, password);
@@ -88,6 +89,7 @@ public class ServerInterface extends InteractiveFilePersistence {
             st.setInt(4, gen);
             st.setInt(5, fitness);
             st.setString(6, genfit);
+            st.setInt(7, forkedFrom);
 
             // execute the preparedstatement insert
             st.executeUpdate();
@@ -115,7 +117,7 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT chrom, genfit, gen FROM cmario WHERE ID=" + id;
+            String query = "SELECT chrom, genfit, gen, forkedFrom FROM cmario WHERE ID=" + id;
 
             // create the java statement
             Statement st = conn.createStatement();
@@ -130,10 +132,11 @@ public class ServerInterface extends InteractiveFilePersistence {
             String chrom = rs.getString("chrom");
             String genfit = rs.getString("genfit");
             int gen = rs.getInt("gen");
+            int forkedFrom = rs.getInt("forkedFrom");
 
             //TODO: load into appropriate places (Done, need confirmation!)
             UT.loadChromosomeServer(chrom);
-            UT.setGenerationServer(gen, 0); //TODO: Load fork ID into appropriate place (0)
+            UT.setGenerationServer(gen, forkedFrom); //TODO: Load fork ID into appropriate place (0)
             UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results

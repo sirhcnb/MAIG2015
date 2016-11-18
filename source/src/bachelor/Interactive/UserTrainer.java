@@ -329,6 +329,14 @@ public class UserTrainer implements Configurable {
     }
 
     /**
+     * Returns the forkedFrom int
+     * @return forkedFrom ID
+     */
+    public int getForkedFrom() {
+        return forkedFrom;
+    }
+
+    /**
      * Loads a chromosome from a XML file
      * @param file To get the path in which we will load the chromosome
      * @throws Exception If I/O fails
