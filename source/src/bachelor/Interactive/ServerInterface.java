@@ -233,14 +233,10 @@ public class ServerInterface extends InteractiveFilePersistence {
                 int gen = rs.getInt("gen");
                 int fitness = rs.getInt("fitness");
                 String comment = rs.getString("comment");
-                //Byte[] numPoints = rs.getBytes("gif"); //TODO: implement gif
 
                 // print the results
                 System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
 
-                //TODO: preview button listener
-                //TODO: import button listener. (Done, need confirmation!)
-                //TODO: Restrict comment length (Done, need confirmation!)
                 HBox hBox = new HBox();
                 hBox.setSpacing(20.0);
 
