@@ -25,6 +25,7 @@ import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
 import java.io.File;
+import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -78,8 +79,23 @@ public class UserInterface extends Application {
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
             public void handle(WindowEvent event) {
-                Platform.exit();
-                System.exit(0);
+                event.consume();
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Warning");
+                alert.setHeaderText("Are you sure you want to exit without uploading/saving your progress?");
+                alert.setContentText("Select \"Cancel\" to return to the program and upload/save your progress.\n" +
+                        "To upload to the server  select \"Server\" and then \"Upload\".\n" +
+                        "If you do not currently have an internet connection, you can select \"File\", then \"Save\".\n" +
+                        "You can resume your progress later by selecting \"File\", then \"Load\", and find the file you saved earlier.\n" +
+                        "Thank you for helping!");
+                Optional<ButtonType> result = alert.showAndWait();
+                if (result.get() == ButtonType.OK) {
+                    Platform.exit();
+                    System.exit(0);
+                }
+                else if (result.get() == ButtonType.CANCEL) {
+                    alert.close();
+                }
             }
         });
         primaryStage.show();
