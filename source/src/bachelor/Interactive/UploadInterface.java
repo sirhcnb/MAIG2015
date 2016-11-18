@@ -34,17 +34,19 @@ public class UploadInterface extends Application {
     private TextField userNameText;
     private TextField commentText;
 
-    //Chromosome and generation to be uploaded
+    //Chromosome, generation and forkedFrom to be uploaded
     private ServerInterface si;
     private CsvFormat csv;
     private Chromosome uploadChrom;
     private int generation;
+    private int forkedFrom;
 
-    public UploadInterface(ServerInterface si, CsvFormat csv, Chromosome uploadChrom, int generation) {
+    public UploadInterface(ServerInterface si, CsvFormat csv, Chromosome uploadChrom, int generation, int forkedFrom) {
         this.si = si;
         this.csv = csv;
         this.uploadChrom = uploadChrom;
         this.generation = generation;
+        this.forkedFrom = forkedFrom;
     }
 
     @Override
@@ -121,9 +123,10 @@ public class UploadInterface extends Application {
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
                     System.out.println("Gen-Fit: " + csv.getFinalString().toString());
+                    System.out.println("forkedFrom: " + forkedFrom);
 
                     //TODO: access gif and genfit and add as parameters
-                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString());
+                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString(), forkedFrom);
 
                 }
 
