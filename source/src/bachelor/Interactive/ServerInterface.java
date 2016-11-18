@@ -133,7 +133,7 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             //TODO: load into appropriate places (Done, need confirmation!)
             UT.loadChromosomeServer(chrom);
-            UT.setGenerationServer(gen);
+            UT.setGenerationServer(gen, 0); //TODO: Load fork ID into appropriate place (0)
             UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results

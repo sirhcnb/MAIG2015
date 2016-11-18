@@ -51,14 +51,14 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
     /**
      * Save the chromosome in the specified path
      */
-    public void saveChromosome(Chromosome c, File file, int generation) throws Exception {
-        storeChromosome(c, file.getAbsolutePath(), generation);
+    public void saveChromosome(Chromosome c, File file, int generation, int forkedFrom) throws Exception {
+        storeChromosome(c, file.getAbsolutePath(), generation, forkedFrom);
     }
 
     /**
      * Sets the generation of the chromosome in the xml file and stores the xml file
      */
-    public void storeChromosome(Chromosome c, String path, int generation) throws Exception {
+    public void storeChromosome(Chromosome c, String path, int generation, int forkedFrom) throws Exception {
         //Load chromosome into a DOM parser
         XmlPersistableChromosome xp = new XmlPersistableChromosome(c);
 
@@ -70,6 +70,11 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         Element gen = doc.createElement("generation");
         gen.setAttribute("id", Integer.toString(generation));
         doc.getDocumentElement().appendChild(gen);
+
+        //Append a forked from tag to our xml file before saving
+        Element fork = doc.createElement("forkedFrom");
+        fork.setAttribute("id", Integer.toString(forkedFrom));
+        doc.getDocumentElement().appendChild(fork);
 
         //Transform the Document object into a string
         StringWriter sw = new StringWriter();
@@ -93,9 +98,9 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
     }
 
     /**
-     * Get generation from xml file if it contains a generation, else return 0.
+     * Get generation and forkedFrom from xml file if it contains a generation, else return 0.
      */
-    public int getGenerationFromChromosome(File file) throws Exception {
+    public GenFork getGenAndForkFromChromosome(File file) throws Exception {
         //Load in the whole XML file as one string
         BufferedReader br = new BufferedReader(new FileReader(file));
         String line;
@@ -111,15 +116,25 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = builder.parse(in);
 
+        //Make new GenFork object to contain generation and forkedFrom
+        GenFork genFork = new GenFork();
+
         //Check if contains generation tag else start from generation 0.
         NodeList generations = doc.getDocumentElement().getElementsByTagName("generation");
 
-        if(generations.getLength() != 0)
-        {
+        if(generations.getLength() != 0) {
             String generation = doc.getDocumentElement().getElementsByTagName("generation").item(0).getAttributes().getNamedItem("id").getNodeValue();
-            return Integer.parseInt(generation);
+            genFork.setGeneration(Integer.parseInt(generation));
         }
 
-        return 0;
+        //Check if contains forkedFrom tag else set forkedFrom to 0.
+        NodeList forksFrom = doc.getDocumentElement().getElementsByTagName("forkedFrom");
+
+        if(forksFrom.getLength() != 0) {
+            String forkedFrom = doc.getDocumentElement().getElementsByTagName("forkedFrom").item(0).getAttributes().getNamedItem("id").getNodeValue();
+            genFork.setGeneration(Integer.parseInt(forkedFrom));
+        }
+
+        return genFork;
     }
 }

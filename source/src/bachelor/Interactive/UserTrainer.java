@@ -69,8 +69,9 @@ public class UserTrainer implements Configurable {
     //Object to save as and load from csv format
     private CsvFormat csv;
 
-    //The loaded chromosome by the user
+    //The loaded chromosome by the user and the forkedFrom id
     private Chromosome loadedChrom;
+    private int forkedFrom;
 
     public Chromosome getPreviewChrom() {
         return previewChrom;
@@ -365,28 +366,30 @@ public class UserTrainer implements Configurable {
      * @throws Exception If I/O fails
      */
     public void saveChromosome(Chromosome c, File file) throws Exception {
-        db.saveChromosome(c, file, ff.generation);
+        db.saveChromosome(c, file, ff.generation, forkedFrom);
         csv.generateCsvFile(c.getId());
     }
 
     /**
-     * Sets the generation received from a specific XML file
-     * @param file The XML file to get the generation from
+     * Sets the generation and forkedFrom received from a specific XML file
+     * @param file The XML file to get the generation and forkedFrom from
      * @throws Exception If I/O fails
      */
-    public void setGeneration(File file) throws Exception {
-        int gen = db.getGenerationFromChromosome(file);
-        ff.generation = gen;
+    public void setGenFork(File file) throws Exception {
+        GenFork genFork = db.getGenAndForkFromChromosome(file);
+        ff.generation = genFork.getGeneration();
         folderName = ff.generation;
+        forkedFrom = genFork.getForkedFrom();
     }
 
     /**
      * Sets the generation received from the server
      * @param generation Generation received from the server when downloading
      */
-    public void setGenerationServer(int generation) {
+    public void setGenerationServer(int generation, int forkedFrom) {
         ff.generation = generation;
         folderName = ff.generation;
+        this.forkedFrom = forkedFrom;
 
         //DEBUG
         //System.out.println(ff.generation);

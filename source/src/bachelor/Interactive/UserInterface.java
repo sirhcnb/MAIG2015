@@ -2,8 +2,6 @@ package bachelor.interactive;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
@@ -375,7 +373,7 @@ public class UserInterface extends Application {
                 File file = fileChooser.showOpenDialog(primaryStage);
                 if(file != null) {
                     try {
-                        UT.setGeneration(file);
+                        UT.setGenFork(file);
                         UT.loadChromosome(file);
                         UT.breed(chosenGifs, true);
                         trainWithInteraction();
