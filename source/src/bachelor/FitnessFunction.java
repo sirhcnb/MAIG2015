@@ -241,7 +241,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         t.scheduleAtFixedRate(task, 1000, 1000);
 
         //Run trial
-        while(!environment.isLevelFinished() && timer < 3){
+        while(!environment.isLevelFinished() && timer < 2){
             if(longestDistance < currentDistance) {
                 //System.out.println("NEW DISTANCE!!");
                 longestDistance = currentDistance;
@@ -284,7 +284,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
      * Interactive evaluation!!
      */
     private int runInteraction(Activator activator, int delayRecording) {
-        //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
+        //If mario doesn't get further within 1,5 second, we begin new chromosome evaluation
         int longestDistance = 0;
         int currentDistance = environment.getEvaluationInfo().distancePassedCells;
 
@@ -296,11 +296,11 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             }
         };
 
-        //Start timer, with 1 second delay and increment each second
-        t.scheduleAtFixedRate(task, 1000, 1000);
+        //Start timer, with 1 second delay and increment each 1,5 seconds
+        t.scheduleAtFixedRate(task, 1000, 1500);
 
         //Run trial
-        while(!environment.isLevelFinished() && timer < 3){
+        while(!environment.isLevelFinished() && timer < 2){
             if(longestDistance < currentDistance) {
                 //System.out.println("NEW DISTANCE!!");
                 longestDistance = currentDistance;
