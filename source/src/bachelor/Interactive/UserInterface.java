@@ -53,6 +53,8 @@ public class UserInterface extends Application {
 
     private int amountOfChosen = 0;
 
+    private int leaderBoardAmount = 20;
+
     public static void main(String[] args) {
         launch(args);
     }
@@ -232,7 +234,7 @@ public class UserInterface extends Application {
         leaderBoard = new ListView<>();
         leaderBoard.setMinWidth(400);
 
-        leaderBoard.setItems(si.importLeaderboard());
+        leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
 
         cp.getChildren().add(leaderBoardLabel);
         cp.getChildren().add(leaderBoard);
@@ -246,7 +248,7 @@ public class UserInterface extends Application {
                 Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
-                        leaderBoard.setItems(si.importLeaderboard());
+                        leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
                     }
                 });
             }
@@ -257,7 +259,8 @@ public class UserInterface extends Application {
         moreButton.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                //TODO: Insert method from serverinterface to load more in from leaderboard
+                leaderBoardAmount += 20;
+                leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
             }
         });
 

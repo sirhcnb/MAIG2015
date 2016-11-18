@@ -209,7 +209,7 @@ public class ServerInterface extends InteractiveFilePersistence {
         }
     }
 
-    public ObservableList<HBox> importLeaderboard() {
+    public ObservableList<HBox> importLeaderboard(int amount) {
         ObservableList<HBox> hBoxObservableList = FXCollections.observableArrayList();
 
         try {
@@ -218,7 +218,7 @@ public class ServerInterface extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT * FROM cmario ORDER BY fitness DESC LIMIT 20";
+            String query = "SELECT * FROM cmario ORDER BY fitness DESC LIMIT " + amount;
 
             // create the java statement
             Statement st = conn.createStatement();
