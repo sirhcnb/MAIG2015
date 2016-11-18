@@ -252,6 +252,17 @@ public class UserInterface extends Application {
             }
         }, 0, 60000);
 
+        //Initialize More button for leaderboard
+        Button moreButton = new Button("More...");
+        moreButton.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent event) {
+                //TODO: Insert method from serverinterface to load more in from leaderboard
+            }
+        });
+
+        cp.getChildren().add(moreButton);
+
 
         //Initialize preview
         Label previewLabel = new Label("Preview:");
