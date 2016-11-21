@@ -10,7 +10,6 @@ import com.anji.run.Run;
 import com.anji.util.Configurable;
 import com.anji.util.Properties;
 import com.anji.util.Reset;
-import iec.GenotypeGif;
 import iec.GifSequenceWriter;
 import org.apache.log4j.Logger;
 import org.jgap.BulkFitnessFunction;
@@ -60,6 +59,9 @@ public class MarioTrainer implements Configurable {
 
     private FilePersistenceMario db = null;
 
+    //Object to save as and load from csv format
+    private CsvFormat csv;
+
     //Finding best chromosome each generation
     static ArrayList<Chromosome> bestChroms = new ArrayList<Chromosome>();
 
@@ -73,6 +75,8 @@ public class MarioTrainer implements Configurable {
      */
     public MarioTrainer() {
         super();
+
+        csv = new CsvFormat();
     }
 
     /**
@@ -182,12 +186,19 @@ public class MarioTrainer implements Configurable {
             //Get chromosome with best fitness
             Chromosome chosen = genotype.getFittestChromosome();
 
+            csv.writeSingleToString(chosen.getFitnessValue(), ff.generation);
+
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
             int bestFitness = chosen.getFitnessValue();
-            if(bestFitness >= (targetFitness-1))
+            if(bestFitness >= 12)//(targetFitness-1))
             {
-                db.storeToFolder(chosen, System.getProperty("user.home") + "/Desktop/bestAutoChromosome");
+                new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/").mkdir();
+
+                db.storeToFolder(chosen, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
                 System.out.println("Best automated chromosome saved to the desktop successfully!");
+
+                csv.generateCsvFileAuto(chosen.getId());
+                System.out.println("GenFit for best automated chromosome saved to the desktop successfully!");
                 break;
             }
 
@@ -210,7 +221,6 @@ public class MarioTrainer implements Configurable {
      */
     public static void main(String[] args) throws Throwable {
         Properties props = new Properties("marioAuto.properties");
-        Persistence db = (Persistence) props.newObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
         ff.init(props);
         ff.levelOptions = "-mix 16 -miy 223";
         ff.generation = 0;

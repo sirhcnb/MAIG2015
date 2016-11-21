@@ -422,7 +422,7 @@ public class MarioNeat implements Configurable{
 		
 		
 		
-//		FitnessCSVWriter.generateCsvFile("GENERALIZED_FITNESS_", fitnessValues, participantName );
+//		FitnessCSVWriter.generateCsvFileInteractive("GENERALIZED_FITNESS_", fitnessValues, participantName );
 //		
 //		// EVALUATE WITH OFFSET
 //		for(int i = 0; i < chromSize; i++){
@@ -466,7 +466,7 @@ public class MarioNeat implements Configurable{
 //				//fitnessValues[ i ] = chrom.getFitnessValue() - ( offsetX / 16 );
 //			}
 //				
-//			FitnessCSVWriter.generateCsvFile("FITNESS_W_OFFSET_", fitnessValues, participantName );
+//			FitnessCSVWriter.generateCsvFileInteractive("FITNESS_W_OFFSET_", fitnessValues, participantName );
 //			
 //		
 //		// Load in chromosome: 

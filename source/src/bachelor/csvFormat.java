@@ -31,11 +31,28 @@ public class CsvFormat {
         finalString = new StringBuilder();
     }
 
-    public void generateCsvFile(long chromID)
+    public void generateCsvFileInteractive(long chromID)
     {
         try
         {
             FileWriter writer = new FileWriter(System.getProperty("user.home") + "/Documents/csv/" + Long.toString(chromID) + ".csv");
+
+            writer.append(finalString);
+
+            writer.flush();
+            writer.close();
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void generateCsvFileAuto(long chromID)
+    {
+        try
+        {
+            FileWriter writer = new FileWriter(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/GenFit");
 
             writer.append(finalString);
 

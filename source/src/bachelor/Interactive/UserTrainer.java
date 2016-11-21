@@ -375,7 +375,7 @@ public class UserTrainer implements Configurable {
      */
     public void saveChromosome(Chromosome c, File file) throws Exception {
         db.saveChromosome(c, file, ff.generation, forkedFrom);
-        csv.generateCsvFile(c.getId());
+        csv.generateCsvFileInteractive(c.getId());
     }
 
     /**
