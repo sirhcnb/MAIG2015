@@ -190,7 +190,7 @@ public class MarioTrainer implements Configurable {
 
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
             int bestFitness = chosen.getFitnessValue();
-            if(bestFitness >= 12)//(targetFitness-1))
+            if(bestFitness >= targetFitness-1)
             {
                 new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/").mkdir();
 
