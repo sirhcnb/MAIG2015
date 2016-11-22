@@ -33,7 +33,6 @@ import ch.idsia.benchmark.mario.engine.level.BgLevelGenerator;
 import ch.idsia.benchmark.mario.engine.level.Level;
 import ch.idsia.benchmark.mario.engine.sprites.Mario;
 import ch.idsia.benchmark.mario.engine.sprites.Sprite;
-import ch.idsia.benchmark.mario.environments.Environment;
 import ch.idsia.benchmark.mario.environments.MarioEnvironment;
 import ch.idsia.tools.GameViewer;
 import ch.idsia.tools.MarioAIOptions;
@@ -49,8 +48,9 @@ import java.awt.image.VolatileImage;
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
+import java.util.Timer;
 
 
 /**
@@ -124,7 +124,18 @@ public ArrayList<String> enemyLabels = new ArrayList<String>();
 public ArrayList<Integer> xPointArray = new ArrayList<Integer>(); 
 public ArrayList<Integer> yPointArray = new ArrayList<Integer>(); 
 public boolean delayFPS = false; 
-public int myCounter = 2; 
+public int myCounter = 2;
+
+//BACHELOR VARIABLES
+public ArrayList<Integer> xCoords = new ArrayList<>();
+public ArrayList<Integer> yCoords = new ArrayList<>();
+public Point currentPositionView = new Point();
+public Point currentPositionWorld = new Point();
+
+public Timer timer;
+public TimerTask drawTask;
+public int timerCounter = 0;
+
 
 private MarioVisualComponent(MarioAIOptions marioAIOptions, MarioEnvironment marioEnvironment)
 {
@@ -180,6 +191,20 @@ private static JFrame marioComponentFrame = null;
 
 public void CreateMarioComponentFrame(MarioVisualComponent m)
 {
+    /** BACHELOR STUFF, THE PATH MARIO IS MOVING. **/
+    timerCounter = 0;
+
+    drawTask = new TimerTask() {
+        @Override
+        public void run() {
+            timerCounter++;
+        }
+    };
+
+    timer = new Timer();
+    timer.scheduleAtFixedRate(drawTask, 0, 100);
+    /*****************************************************************/
+
     if (marioComponentFrame == null)
     {
         marioComponentFrame = new JFrame(/*evaluationOptions.getAgentFullLoadName() +*/ GlobalOptions.getBenchmarkName());
@@ -379,6 +404,7 @@ public void render(Graphics g)
         g.drawString("x : " + mario.x + "y: " + mario.y, 10, 215);
         g.drawString("xOld : " + mario.xOld + "yOld: " + mario.yOld, 10, 225);
     }*/
+
     if(saveImages)
     	createImage();
     
@@ -393,12 +419,68 @@ public void render(Graphics g)
     	drawEnemies();
     
     createImageAtXFrames(8, saveImages);
+
+    /** BACHELOR STUFF, THE PATH MARIO IS MOVING. TODO: True if show path else false**/
+    drawMarioPath(g, true);
+    /*****************************************************************/
     
     g.clearRect(5, 5, 5, 5);
 }
 
+    /**
+     * Bachelor method to draw the path that mario is running
+     * @param g graphics object to draw on
+     * @param draw wheter to draw the path or not
+     */
+    private void drawMarioPath(Graphics g, boolean draw) {
+    if(draw == true)
+    {
+        if(timerCounter % 2 == 0) {
+            int x = (int)mario.x - 5;
+            int y = (int)mario.y - 10;
 
+            if(mario.x > halfWidth)
+            {
+                currentPositionView.setLocation(mario.x + halfWidth - mario.x - 5, mario.y - 10);
+            } else {
+                currentPositionView.setLocation(mario.x - 5, mario.y - 10);
+            }
 
+            xCoords.add(x);
+            yCoords.add(y);
+
+            currentPositionWorld.setLocation(x, y);
+
+            timerCounter++;
+        }
+
+        thisVolatileImageGraphics.setColor(Color.red);
+        thisVolatileImageGraphics.fillRect(currentPositionView.x, currentPositionView.y, 5, 5);
+
+        for(int i = xCoords.size()-1; i > 0; i--) {
+            int posX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i));
+            int posY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i));
+
+            thisVolatileImageGraphics.setColor(Color.red);
+            thisVolatileImageGraphics.fillRect(posX, posY, 5, 5);
+
+            if(i-1 > -1) {
+                int prevPosX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i-1));
+                int prevPosY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i-1));
+
+                thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
+            } else {
+                int prevPosX = 0;
+                int prevPosY = 0;
+
+                thisVolatileImageGraphics.setColor(Color.red);
+                thisVolatileImageGraphics.fillRect(prevPosX, prevPosY, 5, 5);
+
+                thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
+            }
+        }
+    }
+}
 
 private void drawProgress(Graphics g)
 {
@@ -681,8 +763,8 @@ public void drawLines(){
 	int stringCounter = 0; 
 	// So hardcoded it breaks your heart and makes your eyes bleed. But it's okay.  
 	if(xCords.isEmpty())
-		return; 
-	
+		return;
+
 	if(xCords.get(0)>halfWidth && drawStrings.size() >= 8){
 		int x = xCords.get(0) + halfWidth - xCords.get(0); 
 		int y = yCords.get(1); 
