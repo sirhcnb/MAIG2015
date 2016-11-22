@@ -300,7 +300,9 @@ public class UserTrainer implements Configurable {
         //Start anew from generation 0
         ff.generation = 0;
         folderName = 0;
+        forkedFrom = 0;
 
+        csv = new CsvFormat();
         genotype = Genotype.randomInitialGenotype(config);
     }
 
