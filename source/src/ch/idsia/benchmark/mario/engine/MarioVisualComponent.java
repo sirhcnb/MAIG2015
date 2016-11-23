@@ -135,6 +135,7 @@ public Point currentPositionWorld = new Point();
 public Timer timer;
 public TimerTask drawTask;
 public int timerCounter = 0;
+public boolean takenOnce = false;
 
 
 private MarioVisualComponent(MarioAIOptions marioAIOptions, MarioEnvironment marioEnvironment)
@@ -420,67 +421,108 @@ public void render(Graphics g)
     
     createImageAtXFrames(8, saveImages);
 
-    /** BACHELOR STUFF, THE PATH MARIO IS MOVING. TODO: True if show path else false**/
+    /** BACHELOR STUFF, THE PATH MARIO IS MOVING. TODO: True if show path else false **/
     drawMarioPath(g, true);
+
+    if(mario.x < halfWidth) {
+        takeSnapshot(11);
+    } else {
+        takeSnapshot(10);
+    }
+
     /*****************************************************************/
     
     g.clearRect(5, 5, 5, 5);
 }
 
     /**
-     * Bachelor method to draw the path that mario is running
+     * BACHELOR METHOD!! Draw the path that mario is running
      * @param g graphics object to draw on
      * @param draw wheter to draw the path or not
      */
     private void drawMarioPath(Graphics g, boolean draw) {
-    if(draw == true)
-    {
-        if(timerCounter % 2 == 0) {
-            int x = (int)mario.x - 5;
-            int y = (int)mario.y - 10;
+        if(draw == true) {
+            if(timerCounter % 2 == 0) {
+                int x = (int)mario.x - 5;
+                int y = (int)mario.y - 10;
 
-            if(mario.x > halfWidth)
-            {
-                currentPositionView.setLocation(mario.x + halfWidth - mario.x - 5, mario.y - 10);
-            } else {
-                currentPositionView.setLocation(mario.x - 5, mario.y - 10);
+                if(mario.x > halfWidth)
+                {
+                    currentPositionView.setLocation(mario.x + halfWidth - mario.x - 5, mario.y - 10);
+                } else {
+                    currentPositionView.setLocation(mario.x - 5, mario.y - 10);
+                }
+
+                xCoords.add(x);
+                yCoords.add(y);
+
+                currentPositionWorld.setLocation(x, y);
+
+                timerCounter++;
             }
 
-            xCoords.add(x);
-            yCoords.add(y);
-
-            currentPositionWorld.setLocation(x, y);
-
-            timerCounter++;
-        }
-
-        thisVolatileImageGraphics.setColor(Color.red);
-        thisVolatileImageGraphics.fillRect(currentPositionView.x, currentPositionView.y, 5, 5);
-
-        for(int i = xCoords.size()-1; i > 0; i--) {
-            int posX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i));
-            int posY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i));
-
             thisVolatileImageGraphics.setColor(Color.red);
-            thisVolatileImageGraphics.fillRect(posX, posY, 5, 5);
+            thisVolatileImageGraphics.fillRect(currentPositionView.x, currentPositionView.y, 5, 5);
 
-            if(i-1 > -1) {
-                int prevPosX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i-1));
-                int prevPosY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i-1));
-
-                thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
-            } else {
-                int prevPosX = 0;
-                int prevPosY = 0;
+            for(int i = xCoords.size()-1; i > 0; i--) {
+                int posX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i));
+                int posY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i));
 
                 thisVolatileImageGraphics.setColor(Color.red);
-                thisVolatileImageGraphics.fillRect(prevPosX, prevPosY, 5, 5);
+                thisVolatileImageGraphics.fillRect(posX, posY, 5, 5);
 
-                thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
+                if(i-1 > -1) {
+                    int prevPosX = currentPositionView.x - (currentPositionWorld.x - xCoords.get(i-1));
+                    int prevPosY = currentPositionView.y - (currentPositionWorld.y - yCoords.get(i-1));
+
+                    thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
+                } else {
+                    int prevPosX = 0;
+                    int prevPosY = 0;
+
+                    thisVolatileImageGraphics.setColor(Color.red);
+                    thisVolatileImageGraphics.fillRect(prevPosX, prevPosY, 5, 5);
+
+                    thisVolatileImageGraphics.drawLine(prevPosX, prevPosY, posX, posY);
+                }
             }
         }
     }
-}
+
+    /**
+     * BACHELOR METHOD!! Takes a snapshot each amountToTakeSnapshot cells
+     * @param amountToTakeSnapshot Amount of cells before a snapshot is taken
+     */
+    private void takeSnapshot(int amountToTakeSnapshot) {
+        if(marioEnvironment.getEvaluationInfo().distancePassedCells % amountToTakeSnapshot == 0 && takenOnce == false)
+        {
+            takenOnce = true;
+
+            StringBuilder sb = new StringBuilder();
+            String folderDestAsString = "./db/levelImages/";
+            String extension = "png";
+            BufferedImage imageToDraw = thisVolatileImage.getSnapshot();
+            try {
+                sb.append(folderDestAsString);
+                if( fileNumber < 10 ){
+                    sb.append("0");
+                }
+                sb.append(fileNumber + ".");
+                sb.append(extension);
+
+                String finalFileName = sb.toString();
+                if (ImageIO.write(imageToDraw, extension, new File(finalFileName)))
+                {
+                    fileNumber++;
+                    counter = 0;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } else if(marioEnvironment.getEvaluationInfo().distancePassedCells % amountToTakeSnapshot != 0) {
+            takenOnce = false;
+        }
+    }
 
 private void drawProgress(Graphics g)
 {

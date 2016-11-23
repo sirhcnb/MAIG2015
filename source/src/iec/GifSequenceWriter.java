@@ -14,9 +14,12 @@ import javax.imageio.*;
 import javax.imageio.metadata.*;
 import javax.imageio.stream.*;
 
+import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Iterator;
 
 public class GifSequenceWriter {
@@ -228,6 +231,109 @@ public class GifSequenceWriter {
     	System.out.println("Images array size: " + images.size());
     }
   }
-    
-    
+
+  /**
+   * BACHELOR METHOD!! Used to create one long image with the path mario has moved. Rewritten from createGIF method.
+   * @param outputFolder Where to save the level path image
+   * @throws Exception If I/O fails
+   */
+  public static void createLevelImage(String outputFolder) throws Exception{
+    final File dir = new File("./db/levelImages/");
+    ArrayList<BufferedImage> images = new ArrayList<BufferedImage>();
+    File[] imgFiles = dir.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File file) {
+        return !file.isHidden();
+      }
+    });
+
+    Arrays.sort(imgFiles, new Comparator<File>() {
+      @Override
+      public int compare(File o1, File o2) {
+        int n1 = extractNumber(o1.getName());
+        int n2 = extractNumber(o2.getName());
+
+        return n1 - n2;
+      }
+
+      private int extractNumber(String name) {
+        int i;
+        try {
+          int seperator = name.lastIndexOf('/') + 1;
+          int e = name.lastIndexOf('.');
+          String number = name.substring(seperator, e);
+          i = Integer.parseInt(number);
+        } catch(Exception e) {
+          i = 0; // if filename does not match the format
+          // then default to 0
+        }
+        return i;
+      }
+    });
+
+    for (int i = 0; i < imgFiles.length; i++) {
+      BufferedImage img = null;
+      try {
+        System.out.println(imgFiles[i].getAbsolutePath());
+        img = ImageIO.read(imgFiles[i]);
+
+        if(i < imgFiles.length - 1) {
+          img = img.getSubimage(0, 0, img.getWidth()/2, img.getHeight());
+        }
+
+        images.add(img);
+        imgFiles[i].delete();
+      } catch (final IOException e) {
+        System.out.println("Something failed while loading the images" + e);
+      }
+    }
+
+    // CREATE INITIAL IMAGE TO START FROM
+    BufferedImage img1 = images.get(0);
+    BufferedImage img2 = images.get(1);
+    BufferedImage joined = joinBufferedImage(img1, img2);
+
+    //System.out.println("TEST3");
+
+    // CREATING THE LEVEL IMAGE:
+    for(int i = 2; i < images.size(); i++) {
+      joined = joinBufferedImage(joined, images.get(i));
+    }
+
+    // WRITE LEVEL IMAGE TO FILE
+    File outputfile = new File(outputFolder);
+    ImageIO.write(joined, "png", outputfile);
+
+    System.out.println("Done creating imageLevel!!");
+  }
+
+  /**
+   * join two BufferedImage
+   * you can add a orientation parameter to control direction
+   * you can use a array to join more BufferedImage
+   *
+   * Method taken from: http://stackoverflow.com/questions/20826216/copy-two-buffered-image-into-one-image-side-by-side
+   */
+  public static BufferedImage joinBufferedImage(BufferedImage img1,BufferedImage img2) {
+    //do some calculate first
+    int width = img1.getWidth() + img2.getWidth();
+    int height = Math.max(img1.getHeight(), img2.getHeight());
+
+    //create a new buffer and draw two image into the new image
+    BufferedImage newImage = new BufferedImage(width,height, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g2 = newImage.createGraphics();
+    Color oldColor = g2.getColor();
+
+    //fill background
+    g2.setPaint(Color.WHITE);
+    g2.fillRect(0, 0, width, height);
+
+    //draw image
+    g2.setColor(oldColor);
+    g2.drawImage(img1, null, 0, 0);
+    g2.drawImage(img2, null, img1.getWidth(), 0);
+    g2.dispose();
+
+    return newImage;
+  }
 }

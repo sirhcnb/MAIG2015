@@ -247,8 +247,12 @@ public class UserTrainer implements Configurable {
 
             System.out.println(chrommie.getId());
 
-            //Create and save gif
+            //Create and save gif.
             GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
+
+            //Create and save path of mario image TODO: Out comment if image level isn't to be made
+            //GifSequenceWriter.createLevelImage(System.getProperty("user.home") + "/Desktop/levelImage.png");
+
         }
 
         csv.writeSingleToString(genotype.getFittestChromosome().getFitnessValue(), ff.generation);
