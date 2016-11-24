@@ -181,7 +181,36 @@ public class GifSequenceWriter {
 	// LOADING IMAGES: 
     final File dir = new File("./db/images/");
     ArrayList<BufferedImage> images = new ArrayList<BufferedImage>(); 
-    File[] imgFiles = dir.listFiles();
+    File[] imgFiles = dir.listFiles(new FileFilter() {
+      @Override
+      public boolean accept(File file) {
+        return !file.isHidden();
+      }
+    });
+
+    Arrays.sort(imgFiles, new Comparator<File>() {
+      @Override
+      public int compare(File o1, File o2) {
+        int n1 = extractNumber(o1.getName());
+        int n2 = extractNumber(o2.getName());
+
+        return n1 - n2;
+      }
+
+      private int extractNumber(String name) {
+        int i;
+        try {
+          int seperator = name.lastIndexOf('/') + 1;
+          int e = name.lastIndexOf('.');
+          String number = name.substring(seperator, e);
+          i = Integer.parseInt(number);
+        } catch(Exception e) {
+          i = 0; // if filename does not match the format
+          // then default to 0
+        }
+        return i;
+      }
+    });
     //imgFiles[imgFiles.length-1].delete(); 
     //System.out.println("ImgFiles size: " + imgFiles.length);
     for (int i = 0; i<imgFiles.length-1; i++) {
