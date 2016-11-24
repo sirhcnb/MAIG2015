@@ -213,11 +213,9 @@ public void CreateMarioComponentFrame(MarioVisualComponent m)
         m.init();
         marioComponentFrame.pack();
         marioComponentFrame.setResizable(false);
-        //marioComponentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        //DIRTY DIRTY HACK - fix later
-        marioComponentFrame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     }
-    marioComponentFrame.setVisible(true);
+    //Fixed dirty dirty hack with an even dirtier hack - do not show the window at all
+    //marioComponentFrame.setVisible(true);
     m.postInitGraphics();
 }
 
