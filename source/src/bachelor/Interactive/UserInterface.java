@@ -42,6 +42,7 @@ public class UserInterface extends Application {
     private Image[] gifs;
     private boolean[] chosenGifs;
     private Label genLabel;
+    private Label evalLabel;
 
     //Center pane
     private Button previewButton;
@@ -232,6 +233,11 @@ public class UserInterface extends Application {
         breed.setLayoutY(0);
         breed.setMinWidth(320);
         gp.add(breed, 1, 4);
+
+        //Initialize evaluation label
+        evalLabel = new Label("Evaluation: ");
+        evalLabel.setPadding(new Insets(0, 0, 0, 80));
+        gp.add(evalLabel, 2, 4);
     }
 
     public void initializeCenter() {
