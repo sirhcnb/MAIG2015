@@ -485,7 +485,7 @@ public class UserInterface extends Application {
             gifButtons[i].setStyle("-fx-border-color: transparent");
 
             //Show new generation in genLabel
-            genLabel.setText("Generation: " + (UT.getFf().generation - 1));
+            genLabel.setText("Generation: " + UT.getFf().generation);
         }
     }
 

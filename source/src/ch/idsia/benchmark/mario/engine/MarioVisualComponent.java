@@ -760,10 +760,10 @@ public void createImageAtXFrames(int modulus, boolean record){
     if(record == true)
     {
         if(myCounter % modulus == 0){
-            System.out.println("Creating Image!");
+            //System.out.println("Creating Image!");
             createImage();
         } else {
-            System.out.println("myCounter:" + myCounter);
+            //System.out.println("myCounter:" + myCounter);
         }
         myCounter++;
     } else {
