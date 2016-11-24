@@ -6,6 +6,7 @@ import javafx.concurrent.Task;
 import javafx.concurrent.WorkerStateEvent;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -40,6 +41,7 @@ public class UserInterface extends Application {
     private Button[] gifButtons;
     private Image[] gifs;
     private boolean[] chosenGifs;
+    private Label genLabel;
 
     //Center pane
     private Button previewButton;
@@ -207,6 +209,11 @@ public class UserInterface extends Application {
                 gp.add(gifButtons[i], columnIndex, rowIndex);
             }
         }
+
+        //Initialize generation label
+        genLabel = new Label("Generation: ");
+        genLabel.setPadding(new Insets(0, 0, 0, 110));
+        gp.add(genLabel, 0, 4);
 
         //Initialize breed button and add listener to do breed functionality
         Button breed = new Button("Breed");
@@ -457,7 +464,7 @@ public class UserInterface extends Application {
 
     /**
      * After breeding has been done and new evaluations has been run, set buttons to
-     * show new generation gifs.
+     * show new generation gifs and generation.
      * @param generation Current generation, in which to show gifs of.
      * @param populationSize How many gifs are there to be set.
      */
@@ -470,6 +477,9 @@ public class UserInterface extends Application {
             amountOfChosen = 0;
             gifButtons[i].setGraphic(new ImageView(gifs[i]));
             gifButtons[i].setStyle("-fx-border-color: transparent");
+
+            //Show new generation in genLabel
+            genLabel.setText("Generation: " + (UT.getFf().generation - 1));
         }
     }
 
