@@ -19,7 +19,7 @@ import java.sql.*;
 /**
  * Created by chris on 15-11-2016.
  */
-public class ServerInterface extends InteractiveFilePersistence {
+public class ServerPersistence extends InteractiveFilePersistence {
     private UserTrainer UT;
     private UserInterface UI;
 
@@ -28,7 +28,7 @@ public class ServerInterface extends InteractiveFilePersistence {
     String password = "qwerty12345";
     String url = "jdbc:mysql://178.62.20.78:3306/collmario";
 
-    public ServerInterface(UserTrainer UT, UserInterface UI) {
+    public ServerPersistence(UserTrainer UT, UserInterface UI) {
         this.UT = UT;
         this.UI = UI;
     }
@@ -46,7 +46,7 @@ public class ServerInterface extends InteractiveFilePersistence {
             conn = DriverManager.getConnection(url, sqlUserName, password);
             System.out.println("Database connection established");
 
-            ServerInterface si = new ServerInterface();
+            ServerPersistence si = new ServerPersistence();
             //si.importFromDatabase(1);
             si.importLeaderboard();
 

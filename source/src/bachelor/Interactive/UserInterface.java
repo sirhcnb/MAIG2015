@@ -52,7 +52,7 @@ public class UserInterface extends Application {
     private ListView<HBox> leaderBoard;
 
     private UserTrainer UT;
-    private ServerInterface si;
+    private ServerPersistence si;
 
     private int amountOfChosen = 0;
 
@@ -70,7 +70,7 @@ public class UserInterface extends Application {
     public void start(Stage primaryStage) {
         try {
             UT = new UserTrainer();
-            si = new ServerInterface(UT, this);
+            si = new ServerPersistence(UT, this);
             initialize(primaryStage);
         } catch (Throwable th) {
             System.out.println(th);

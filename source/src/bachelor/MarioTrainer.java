@@ -88,6 +88,8 @@ public class MarioTrainer implements Configurable {
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
+        ff.levelOptions = "-mix 16 -miy 223";
+
         boolean doReset = props.getBooleanProperty(RESET_KEY, false);
         if (doReset) {
             logger.warn("Resetting previous run !!!");
@@ -171,16 +173,19 @@ public class MarioTrainer implements Configurable {
             List<Chromosome> chroms = genotype.getChromosomes();
 
             //Evaluate each chromosome in the population
-            for (int i = 0; i < populationSize; i++) {
+            ff.setEvaluationType(evaluationType);
+            ff.evaluate(chroms);
+
+            /*for (int i = 0; i < populationSize; i++) {
                 //Get a chromosome
                 Chromosome chrommie = (Chromosome) chroms.get(i);
 
                 //Evaluate that chromosome
                 int fitness = ff.evaluateChromosome(chrommie, evaluationType);
                 chrommie.setFitnessValue(fitness);
-            }
+            }*/
 
-            ff.generation++;
+            //ff.generation++;
             System.out.println("Generation after record: " + ff.generation + " | " + ff);
 
             //Get chromosome with best fitness

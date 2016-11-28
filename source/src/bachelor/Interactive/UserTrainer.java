@@ -81,7 +81,6 @@ public class UserTrainer implements Configurable {
     private Chromosome previewChrom;
 
     //For gif creation and handling in UserInterface
-    public int folderName;
     private static FitnessFunction ff = new FitnessFunction();
 
     /**
@@ -91,7 +90,6 @@ public class UserTrainer implements Configurable {
     public UserTrainer() throws Throwable {
         Properties props = new Properties("marioInteractive.properties");
 
-        folderName = 0;
         ff.generation = 0;
 
         csv = new CsvFormat();
@@ -201,7 +199,11 @@ public class UserTrainer implements Configurable {
             chromFile = new File(previewPath.toString() + "/" + previewChrom.getId().toString() + ".gif");
 
             if(!chromFile.exists()) {
-                ff.evaluateChromosome(previewChrom, evaluationType);
+                //ff.evaluateChromosome(previewChrom, evaluationType);
+                List<Chromosome> previewChromList = new ArrayList<>();
+                previewChromList.add(previewChrom);
+                ff.setEvaluationType(evaluationType);
+                ff.evaluate(previewChromList);
                 GifSequenceWriter.fileNumber = (int) (long) previewChrom.getId();
                 GifSequenceWriter.createGIF(previewPath.toString() + "/");
             }
@@ -228,16 +230,16 @@ public class UserTrainer implements Configurable {
         System.out.println("*************** Running generation: " + ff.generation + " ***************");
         logger.info( "Generation " + ff.generation + ": start" );
 
-        //Create gif folder for training with interaction
-        new File("db/gifs/interaction/" + folderName).mkdirs();
-
         //Get all chromosomes
         List<Chromosome> chroms = genotype.getChromosomes();
 
         System.out.println(chroms.size());
 
         //Evaluate each chromosome in the population
-        for (int i = 0; i < populationSize; i++) {
+        ff.setEvaluationType(evaluationType);
+        ff.evaluate(chroms);
+
+        /*for (int i = 0; i < populationSize; i++) {
             //Get a chromosome
             Chromosome chrommie = (Chromosome) chroms.get(i);
 
@@ -253,16 +255,13 @@ public class UserTrainer implements Configurable {
             //Create and save path of mario image TODO: Out comment if image level isn't to be made
             //GifSequenceWriter.createLevelImage(System.getProperty("user.home") + "/Desktop/levelImage.png");
 
-        }
+        }*/
 
         csv.writeSingleToString(genotype.getFittestChromosome().getFitnessValue(), ff.generation);
 
         //Keep track of current generation (for server part and comparison)
-        ff.generation++;
+        //ff.generation++;
         System.out.println("Generation after record: " + ff.generation + " | " + ff);
-
-        GifSequenceWriter.fileNumber = 0;
-        folderName++;
     }
 
     /**
@@ -303,7 +302,7 @@ public class UserTrainer implements Configurable {
     public void newRun() throws InvalidConfigurationException {
         //Start anew from generation 0
         ff.generation = 0;
-        folderName = 0;
+        ff.folderName = 0;
         forkedFrom = 0;
 
         csv = new CsvFormat();
@@ -392,7 +391,7 @@ public class UserTrainer implements Configurable {
     public void setGenFork(File file) throws Exception {
         GenFork genFork = db.getGenAndForkFromChromosome(file);
         ff.generation = genFork.getGeneration();
-        folderName = ff.generation;
+        ff.folderName = ff.generation;
         forkedFrom = genFork.getForkedFrom();
     }
 
@@ -402,7 +401,7 @@ public class UserTrainer implements Configurable {
      */
     public void setGenerationServer(int generation, int forkedFrom) {
         ff.generation = generation;
-        folderName = ff.generation;
+        ff.folderName = ff.generation;
         this.forkedFrom = forkedFrom;
 
         //DEBUG

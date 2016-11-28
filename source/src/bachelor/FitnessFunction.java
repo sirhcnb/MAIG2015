@@ -10,11 +10,13 @@ import com.anji.integration.ActivatorTranscriber;
 import com.anji.integration.TargetFitnessFunction;
 import com.anji.util.Configurable;
 import com.anji.util.Properties;
+import iec.GifSequenceWriter;
 import org.apache.log4j.Logger;
 import org.jgap.BulkFitnessFunction;
 import org.jgap.Chromosome;
 import own.MarioInputs;
 
+import java.io.File;
 import java.util.*;
 
 /**
@@ -25,8 +27,14 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     private static Logger logger = Logger.getLogger( TargetFitnessFunction.class );
     private ActivatorTranscriber factory;
 
+    //For gif generation
+    public int folderName = 0;
+
     //Timer for distance traveled fitness function
     private int timer = 0;
+
+    //EvaluationType
+    private String EvaluationType;
 
     //Mario variables
     static final MarioAIOptions marioAIOptions = new MarioAIOptions();
@@ -35,8 +43,6 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     static Environment environment = MarioEnvironment.getInstance();
     public BachelorController agent = new BachelorController();
 
-    //Info on stage
-    protected byte[][] mergedObservation;
     public String levelOptions; // see class ParameterContainer.java for each flag
 
     //Control buttons
@@ -63,76 +69,31 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
     }
 
     @Override
-    public void evaluate(List genotypes) {
+    public void evaluate(List chromosomes) {
         System.out.println("Evaluting list of chromosones...");
-        System.out.println("Increasing generation" + generation);
-        Iterator it = genotypes.iterator();
+        System.out.println("Increasing generation: " + generation);
+
+        //Create gif folder for training with interaction
+        new File("db/gifs/interaction/" + folderName).mkdirs();
+
+        Iterator it = chromosomes.iterator();
         while ( it.hasNext() ) {
-            Chromosome genotype = (Chromosome) it.next();
-            evaluate(genotype, false);
+            Chromosome chrom = (Chromosome) it.next();
+            System.out.println("Evaluating chromsome: " + chrom.getId());
+            evaluate(chrom, EvaluationType);
         }
         generation++;
+
+        folderName++;
+        GifSequenceWriter.fileNumber = 0;
     }
 
     /**
-     * Evaluate for the automated Neat step.
+     * Evaluate the chromosome
      * @param c The chromosome to evaluate.
-     * @param visual Show mario window or not.
+     * @param evaluationType Which kind of evaluation are we to run
      */
-    public void evaluate( Chromosome c, boolean visual ) {
-        marioAIOptions.setVisualization(visual);
-
-        try {
-            Activator activator = factory.newActivator( c );
-
-            // calculate fitness
-            int fitness = 0;
-            fitness += singleTrial(activator);
-
-            c.setFitnessValue(fitness);
-        }
-        catch (Throwable e) {
-            logger.warn("error evaluating chromosome " + c.toString(), e);
-            c.setFitnessValue(0);
-        }
-    }
-
-    /**
-     * Stimulates the chromosome and evaluates according to its fitness.
-     * @param activator Stimuli object
-     * @return Fitness of the chromosome
-     */
-    private int singleTrial( Activator activator ) {
-        int fitness;
-
-        marioInputs.setRadius(1, 1, 1, 1);
-        while(!environment.isLevelFinished()){
-            //Set all actions to false
-            resetActions();
-
-            //Get inputs
-            double[] networkInput = marioInputs.getAllInputs();
-            double[] networkOutput = activator.next(networkInput);
-
-            //Get output
-            boolean[] actions = getAction(networkOutput);
-
-            //Perform action and tick the environment forward
-            environment.performAction(actions);
-            makeTick();
-        }
-        fitness = environment.getEvaluationInfo().distancePassedCells;
-
-        return fitness;
-    }
-
-    /**
-     * Evaluates according to if its automated or interactive.
-     * @param c The chromosome to be evaluated.
-     * @param evaluationType Automated or interaction.
-     * @return Fitness of the chromosome.
-     */
-    public int evaluateChromosome(Chromosome c, String evaluationType){
+    public void evaluate(Chromosome c, String evaluationType) {
         //New evaluation, put mario at start position
         environment.reset(levelOptions);
 
@@ -143,7 +104,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         int fitness = 0;
 
         try {
-            // Load in chromosome to the factory
+            // Load in chromosome to the activator object
             Activator activator = factory.newActivator(c);
 
             if(evaluationType.equals("DistanceTraveled"))
@@ -152,6 +113,12 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             } else if(evaluationType.equals("Interaction"))
             {
                 fitness = runInteraction(activator, delayRecording);
+
+                //Create and save gif.
+                GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
+
+                //Create and save path of mario image TODO: Out comment if image level isn't to be made
+                //GifSequenceWriter.createLevelImage(System.getProperty("user.home") + "/Desktop/levelImage.png");
             } else if(evaluationType.equals("Preview")) {
                 runSinglePreview(activator, delayRecording);
             } else
@@ -165,7 +132,7 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
             c.setFitnessValue( 0 );
         }
 
-        return fitness;
+        c.setFitnessValue(fitness);
     }
 
     /**
@@ -225,6 +192,8 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
      * Automated evaluation!!
      */
     private int runDistanceEvaluation(Activator activator) {
+        marioAIOptions.setVisualization(true);
+
         //If mario doesn't get further within 5 seconds, we begin new chromosome evaluation
         int longestDistance = 0;
         int currentDistance = environment.getEvaluationInfo().distancePassedCells;
@@ -345,6 +314,14 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
 
     public static Environment getEnvironment() {
         return environment;
+    }
+
+    public String getEvaluationType() {
+        return EvaluationType;
+    }
+
+    public void setEvaluationType(String evaluationType) {
+        EvaluationType = evaluationType;
     }
 
     /**

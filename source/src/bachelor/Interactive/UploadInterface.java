@@ -18,8 +18,6 @@ import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import org.jgap.Chromosome;
 
-import java.util.ArrayList;
-
 /**
  * Created by Pierre on 15-11-2016.
  */
@@ -35,13 +33,13 @@ public class UploadInterface extends Application {
     private TextField commentText;
 
     //Chromosome, generation and forkedFrom to be uploaded
-    private ServerInterface si;
+    private ServerPersistence si;
     private CsvFormat csv;
     private Chromosome uploadChrom;
     private int generation;
     private int forkedFrom;
 
-    public UploadInterface(ServerInterface si, CsvFormat csv, Chromosome uploadChrom, int generation, int forkedFrom) {
+    public UploadInterface(ServerPersistence si, CsvFormat csv, Chromosome uploadChrom, int generation, int forkedFrom) {
         this.si = si;
         this.csv = csv;
         this.uploadChrom = uploadChrom;
