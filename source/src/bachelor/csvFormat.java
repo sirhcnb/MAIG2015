@@ -31,11 +31,11 @@ public class CsvFormat {
         finalString = new StringBuilder();
     }
 
-    public void generateCsvFileInteractive(long chromID)
+    public void generateCsvFileInteractive(String name)
     {
         try
         {
-            FileWriter writer = new FileWriter(System.getProperty("user.home") + "/Documents/csv/" + Long.toString(chromID) + ".csv");
+            FileWriter writer = new FileWriter(System.getProperty("user.home") + "/Documents/csv/" + name + ".csv");
 
             writer.append(finalString);
 
@@ -48,7 +48,7 @@ public class CsvFormat {
         }
     }
 
-    public void generateCsvFileAuto(long chromID)
+    public void generateCsvFileAuto()
     {
         try
         {
@@ -76,9 +76,9 @@ public class CsvFormat {
         finalString.append(Integer.toString(bestFitness));
     }
 
-    public void loadCSVFromChromosome(long chromID) throws IOException {
+    public void loadCSVFromChromosome(String name) throws IOException {
         finalString = new StringBuilder();
-        File file = new File(System.getProperty("user.home") + "/Documents/csv/" + Long.toString(chromID) + ".csv");
+        File file = new File(System.getProperty("user.home") + "/Documents/csv/" + name + ".csv");
 
         if(file != null)
         {
@@ -90,9 +90,6 @@ public class CsvFormat {
     public void loadCSVFromChromosomeServer(String csvFormat) {
         finalString = new StringBuilder();
         finalString.append(csvFormat);
-
-        //DEBUG!!
-        //System.out.println(finalString.toString());
     }
 
     public StringBuilder getFinalString() {

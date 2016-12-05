@@ -156,7 +156,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
                     //Start evaluation of the received chromosome
                     boolean[] array = new boolean[0]; //Empty boolean array, for breeding only on loaded chromosome
-                    UT.breed(array, true);
+                    UT.breed(array);
                     UI.trainWithInteraction();
                 } catch (Exception e) {}
             }

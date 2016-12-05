@@ -5,6 +5,7 @@ import bachelor.CsvFormat;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
+import com.anji.integration.XmlPersistableChromosome;
 import com.anji.neat.Evolver;
 import com.anji.neat.NeatConfiguration;
 import com.anji.persistence.Persistence;
@@ -14,10 +15,7 @@ import com.anji.util.Properties;
 import com.anji.util.Reset;
 import iec.GifSequenceWriter;
 import org.apache.log4j.Logger;
-import org.jgap.BulkFitnessFunction;
-import org.jgap.Chromosome;
-import org.jgap.Genotype;
-import org.jgap.InvalidConfigurationException;
+import org.jgap.*;
 import org.jgap.event.GeneticEvent;
 
 import java.io.File;
@@ -25,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -71,6 +70,7 @@ public class UserTrainer implements Configurable {
 
     //The loaded chromosome by the user and the forkedFrom id
     private Chromosome loadedChrom;
+    private boolean loadedChromSurvives;
     private int forkedFrom;
 
     public Chromosome getPreviewChrom() {
@@ -257,7 +257,7 @@ public class UserTrainer implements Configurable {
 
         }*/
 
-        csv.writeSingleToString(genotype.getFittestChromosome().getFitnessValue(), ff.generation);
+        csv.writeSingleToString(genotype.getFittestChromosome().getFitnessValue(), ff.generation-1);
 
         //Keep track of current generation (for server part and comparison)
         //ff.generation++;
@@ -268,27 +268,17 @@ public class UserTrainer implements Configurable {
      * Basic breed functionality. ANJI handles everything regarding reproduction, mutation and so on.
      * @param chosenGifs Chosen chromosomes to influence the new offsprings by a huge margin.
      */
-    public void breed(boolean[] chosenGifs, boolean isChromLoaded) throws InvalidConfigurationException {
+    public void breed(boolean[] chosenGifs) throws Exception {
         List<Chromosome> chroms = genotype.getChromosomes();
 
-        //If a chromosome has been loaded, breed from this chromosome only and ignore the others
-        if(isChromLoaded == true)
-        {
-            //Create new genotype from our loaded chromosome and begin evolving from this point
-            loadedChrom.setFitnessValue(1000);
-            List<Chromosome> loadedChromList = new ArrayList<>();
-            loadedChromList.add(loadedChrom);
-            genotype = new Genotype(config, loadedChromList);
-        } else {
-            for(int i = 0; i < chosenGifs.length; i++){
-                if(chosenGifs[i] == true) {
-                    Chromosome chosenChrom = chroms.get(i);
-                    chosenChrom.setFitnessValue(1000);
-                    System.out.println(chosenChrom.getId());
-                } else {
-                    Chromosome notChosenChrom = chroms.get(i);
-                    notChosenChrom.setFitnessValue(0);
-                }
+        for(int i = 0; i < chosenGifs.length; i++){
+            if(chosenGifs[i] == true) {
+                Chromosome chosenChrom = chroms.get(i);
+                chosenChrom.setFitnessValue(1000);
+                System.out.println(chosenChrom.getId());
+            } else {
+                Chromosome notChosenChrom = chroms.get(i);
+                notChosenChrom.setFitnessValue(0);
             }
         }
 
@@ -347,8 +337,8 @@ public class UserTrainer implements Configurable {
      * @throws Exception If I/O fails
      */
     public void loadChromosome(File file) throws Exception {
-        loadedChrom = db.loadChromosome(config, file);
-        csv.loadCSVFromChromosome(loadedChrom.getId());
+        db.loadChromosomes(file);
+        csv.loadCSVFromChromosome(file.getName());
     }
 
     /**
@@ -358,9 +348,6 @@ public class UserTrainer implements Configurable {
      */
     public void loadChromosomeServer(String xmlFormat) throws Exception {
         loadedChrom = db.loadChromosomeServer(config, xmlFormat);
-
-        //DEBUG!!
-        //System.out.println(loadedChrom.getId());
     }
 
     /**
@@ -374,13 +361,22 @@ public class UserTrainer implements Configurable {
 
     /**
      * Saves the chosen chromosome to the specified path from the file
-     * @param c Chromosome to be saved
+     * @param chroms Chromosomes to be saved
      * @param file To get the path in which we will save the chromosome
      * @throws Exception If I/O fails
      */
-    public void saveChromosome(Chromosome c, File file) throws Exception {
-        db.saveChromosome(c, file, ff.generation, forkedFrom);
-        csv.generateCsvFileInteractive(c.getId());
+    public void saveChromosomes(ArrayList<Chromosome> chroms, File file) throws Exception {
+        db.saveChromosomes(chroms, file.getAbsolutePath());
+        csv.generateCsvFileInteractive(file.getName());
+    }
+
+    /**
+     * Makes a genfork file
+     * @param file To get the path in which we will save the genFork file
+     * @throws Exception If I/O fails
+     */
+    public void makeGenForkFile(File file) throws Exception {
+        db.makeGenForkFile(file, ff.generation, forkedFrom);
     }
 
     /**
@@ -389,7 +385,7 @@ public class UserTrainer implements Configurable {
      * @throws Exception If I/O fails
      */
     public void setGenFork(File file) throws Exception {
-        GenFork genFork = db.getGenAndForkFromChromosome(file);
+        GenFork genFork = db.getGenAndForkFromFile(file);
         ff.generation = genFork.getGeneration();
         ff.folderName = ff.generation;
         forkedFrom = genFork.getForkedFrom();
@@ -403,8 +399,5 @@ public class UserTrainer implements Configurable {
         ff.generation = generation;
         ff.folderName = ff.generation;
         this.forkedFrom = forkedFrom;
-
-        //DEBUG
-        //System.out.println(ff.generation);
     }
 }

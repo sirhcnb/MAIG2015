@@ -11,31 +11,31 @@ import own.FilePersistenceMario;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * Created by Pierre on 14-11-2016.
  */
 public class InteractiveFilePersistence extends FilePersistenceMario {
     /**
-     * Load in the chromosome and evolve to reproduce and populate according to this chromosome
+     * Load in the chromosomes and evolve to reproduce and populate according to these chromosomes
      */
-    public Chromosome loadChromosome(Configuration config, File file) throws Exception {
-        //Load in the whole XML file as one string
-        BufferedReader br = new BufferedReader(new FileReader(file));
-        String line;
-        StringBuilder sb = new StringBuilder();
-
-        while((line = br.readLine()) != null){
-            sb.append(line.trim());
+    public void loadChromosomes(File file) throws Exception {
+        for(int i = 0; i < file.listFiles().length; i++) {
+            if((file.listFiles()[i].getAbsolutePath()).contains("chromosome")) {
+                copyFile(file.listFiles()[i].getAbsolutePath(), "./db/chromosome/" + file.listFiles()[i].getName());
+            }
         }
 
-        //Create chromosome from XML string
-        return chromosomeFromXml(config, sb.toString());
+        copyFile(file.getAbsolutePath() + "/run.xml", "./db/run/runtestrun.xml");
     }
 
     /**
@@ -49,32 +49,25 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
     }
 
     /**
-     * Save the chromosome in the specified path
+     * Save the chromosomes in the specified path
      */
-    public void saveChromosome(Chromosome c, File file, int generation, int forkedFrom) throws Exception {
-        storeChromosome(c, file.getAbsolutePath(), generation, forkedFrom);
+    public void saveChromosomes(ArrayList<Chromosome> chroms, String path) throws Exception {
+        for(int i = 0; i < chroms.size(); i++) {
+            storeChromosome(chroms.get(i), path);
+        }
     }
 
     /**
      * Sets the generation of the chromosome in the xml file and stores the xml file
      */
-    public void storeChromosome(Chromosome c, String path, int generation, int forkedFrom) throws Exception {
+    public void storeChromosome(Chromosome c, String path) throws Exception {
         //Load chromosome into a DOM parser
         XmlPersistableChromosome xp = new XmlPersistableChromosome(c);
 
+        //Make the xml document
         ByteArrayInputStream in = new ByteArrayInputStream(xp.toXml().getBytes());
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
         Document doc = builder.parse(in);
-
-        //Append a generation tag to our xml file before saving
-        Element gen = doc.createElement("generation");
-        gen.setAttribute("id", Integer.toString(generation));
-        doc.getDocumentElement().appendChild(gen);
-
-        //Append a forked from tag to our xml file before saving
-        Element fork = doc.createElement("forkedFrom");
-        fork.setAttribute("id", Integer.toString(forkedFrom));
-        doc.getDocumentElement().appendChild(fork);
 
         //Transform the Document object into a string
         StringWriter sw = new StringWriter();
@@ -86,10 +79,56 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         //Save the chromosome string format into the xml file specified
         FileOutputStream out = null;
         try {
-            out = new FileOutputStream( path + ".xml" );
+            out = new FileOutputStream( path + "/chromosome" + c.getId() + ".xml" );
             out.write(xml.getBytes());
             out.close();
-            counter++;
+        }
+        finally {
+            if ( out != null )
+                out.close();
+        }
+    }
+
+    /**
+     * Make a genfork file for loading later
+     * @param file directory to save to
+     */
+    public void makeGenForkFile(File file, int generation, int forkedFrom) throws Exception {
+        DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+
+        //GenFork root tag
+        Document doc = docBuilder.newDocument();
+        Element genForkElement = doc.createElement("GenFork");
+        doc.appendChild(genForkElement);
+
+        //Generation tag
+        Element gen = doc.createElement("generation");
+        Attr genAttribute = doc.createAttribute("id");
+        genAttribute.setValue(Integer.toString(generation));
+        gen.setAttributeNode(genAttribute);
+        genForkElement.appendChild(gen);
+
+        //forkedFrom tag
+        Element fork = doc.createElement("forkedFrom");
+        Attr forkAttribute = doc.createAttribute("id");
+        forkAttribute.setValue(Integer.toString(forkedFrom));
+        fork.setAttributeNode(forkAttribute);
+        genForkElement.appendChild(fork);
+
+        //Transform the Document object into a string
+        StringWriter sw = new StringWriter();
+        TransformerFactory tf = TransformerFactory.newInstance();
+        Transformer transformer = tf.newTransformer();
+        transformer.transform(new DOMSource(doc), new StreamResult(sw));
+        String xml = sw.toString();
+
+        //Save the genfork string format into the xml file specified
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream( file.getAbsolutePath() + "/genFork.xml" );
+            out.write(xml.getBytes());
+            out.close();
         }
         finally {
             if ( out != null )
@@ -100,9 +139,9 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
     /**
      * Get generation and forkedFrom from xml file if it contains a generation, else return 0.
      */
-    public GenFork getGenAndForkFromChromosome(File file) throws Exception {
+    public GenFork getGenAndForkFromFile(File file) throws Exception {
         //Load in the whole XML file as one string
-        BufferedReader br = new BufferedReader(new FileReader(file));
+        BufferedReader br = new BufferedReader(new FileReader(file + "/genFork.xml"));
         String line;
         StringBuilder sb = new StringBuilder();
 
@@ -136,5 +175,28 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         }
 
         return genFork;
+    }
+
+    /**
+     * Copies source and puts in destination
+     * @param source source to copy
+     * @param dest destination to save to
+     * @throws IOException
+     */
+    public static void copyFile(String source, String dest) throws IOException {
+        InputStream is = null;
+        OutputStream os = null;
+        try {
+            is = new FileInputStream(source);
+            os = new FileOutputStream(dest);
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = is.read(buffer)) > 0) {
+                os.write(buffer, 0, length);
+            }
+        } finally {
+            is.close();
+            os.close();
+        }
     }
 }

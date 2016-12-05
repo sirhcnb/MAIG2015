@@ -1,5 +1,6 @@
 package bachelor;
 
+import bachelor.interactive.InteractiveFilePersistence;
 import com.anji.integration.LogEventListener;
 import com.anji.integration.PersistenceEventListener;
 import com.anji.integration.PresentationEventListener;
@@ -57,7 +58,7 @@ public class MarioTrainer implements Configurable {
     private double thresholdFitness = 0.0d;
     private int maxFitness = 0;
 
-    private FilePersistenceMario db = null;
+    private InteractiveFilePersistence db = null;
 
     //Object to save as and load from csv format
     private CsvFormat csv;
@@ -101,7 +102,7 @@ public class MarioTrainer implements Configurable {
         config = new NeatConfiguration(props);
 
         // peristence
-        db = (FilePersistenceMario) props.singletonObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
+        db = (InteractiveFilePersistence) props.singletonObjectProperty(Persistence.PERSISTENCE_CLASS_KEY);
         numEvolutions = props.getIntProperty(NUM_GENERATIONS_KEY);
         targetFitness = props.getDoubleProperty(FITNESS_TARGET_KEY, 1.0d);
         thresholdFitness = props.getDoubleProperty(FITNESS_THRESHOLD_KEY, targetFitness);
@@ -170,7 +171,7 @@ public class MarioTrainer implements Configurable {
             new File("db/gifs/automated" + folderName).mkdirs();
 
             //Get all the chromosomes (for evaluation)
-            List<Chromosome> chroms = genotype.getChromosomes();
+            ArrayList<Chromosome> chroms = (ArrayList<Chromosome>) genotype.getChromosomes();
 
             //Evaluate each chromosome in the population
             ff.setEvaluationType(evaluationType);
@@ -199,11 +200,16 @@ public class MarioTrainer implements Configurable {
             {
                 new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/").mkdir();
 
-                db.storeToFolder(chosen, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
+                db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
                 System.out.println("Best automated chromosome saved to the desktop successfully!");
 
-                csv.generateCsvFileAuto(chosen.getId());
+                csv.generateCsvFileAuto();
                 System.out.println("GenFit for best automated chromosome saved to the desktop successfully!");
+
+                InteractiveFilePersistence.copyFile(
+                        "./db/run/runtestrun.xml",
+                        System.getProperty("user.home") + "/Desktop/bestAutoChromosome/run.xml"
+                        );
                 break;
             }
 

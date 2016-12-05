@@ -18,12 +18,14 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Optional;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -222,7 +224,7 @@ public class UserInterface extends Application {
             @Override
             public void handle(ActionEvent event) {
                 try {
-                    UT.breed(chosenGifs, false);
+                    UT.breed(chosenGifs);
                     trainWithInteraction();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -233,11 +235,6 @@ public class UserInterface extends Application {
         breed.setLayoutY(0);
         breed.setMinWidth(320);
         gp.add(breed, 1, 4);
-
-        //Initialize evaluation label
-        evalLabel = new Label("Evaluation: ");
-        evalLabel.setPadding(new Insets(0, 0, 0, 80));
-        gp.add(evalLabel, 2, 4);
     }
 
     public void initializeCenter() {
@@ -314,7 +311,7 @@ public class UserInterface extends Application {
     }
 
     public void initializeMenu(Stage primaryStage) {
-        FileChooser fileChooser = new FileChooser();
+        DirectoryChooser dirChooser = new DirectoryChooser();
 
         //Initialize menu bar
         MenuBar menuBar = new MenuBar();
@@ -352,40 +349,16 @@ public class UserInterface extends Application {
         save.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
+                File file = dirChooser.showDialog(primaryStage);
+                if(file != null && file.isDirectory()) {
+                    try {
+                        ArrayList<Chromosome> chroms = (ArrayList) UT.genotype.getChromosomes();
+                        UT.saveChromosomes(chroms, file);
+                        UT.makeGenForkFile(file);
 
-                if(amountOfChosen > 1) {
-                    alert.setTitle("Save dialog");
-                    alert.setHeaderText(null);
-                    alert.setContentText("You have selected several chromosomes to save. " +
-                            "Please select only one!");
-
-                    alert.showAndWait();
-                } else if(amountOfChosen <= 0) {
-                    alert.setTitle("Save dialog");
-                    alert.setHeaderText(null);
-                    alert.setContentText("Please select one chromosome to be saved!");
-
-                    alert.showAndWait();
-                } else {
-                    File file = fileChooser.showSaveDialog(primaryStage);
-                    if(file != null) {
-                        try {
-                            int saveChromosome = 0;
-                            for(int i = 0; i < chosenGifs.length; i++) {
-                                if(chosenGifs[i] == true)
-                                {
-                                    saveChromosome = i;
-                                    break;
-                                }
-                            }
-
-                            Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(saveChromosome);
-
-                            UT.saveChromosome(chrom, file);
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        InteractiveFilePersistence.copyFile("./db/run/runtestrun.xml", file.getAbsolutePath() + "/run.xml");
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -397,12 +370,11 @@ public class UserInterface extends Application {
         load.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
-                File file = fileChooser.showOpenDialog(primaryStage);
-                if(file != null) {
+                File file = dirChooser.showDialog(primaryStage);
+                if(file != null && file.isDirectory()) {
                     try {
-                        UT.setGenFork(file);
                         UT.loadChromosome(file);
-                        UT.breed(chosenGifs, true);
+                        UT.setGenFork(file);
                         trainWithInteraction();
                     } catch (Exception e) {
                         e.printStackTrace();
