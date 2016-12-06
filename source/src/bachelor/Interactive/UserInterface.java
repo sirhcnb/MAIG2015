@@ -373,7 +373,7 @@ public class UserInterface extends Application {
                 File file = dirChooser.showDialog(primaryStage);
                 if(file != null && file.isDirectory()) {
                     try {
-                        UT.loadChromosome(file);
+                        UT.loadChromosomes(file);
                         UT.setGenFork(file);
                         trainWithInteraction();
                     } catch (Exception e) {

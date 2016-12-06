@@ -198,6 +198,11 @@ public class MarioTrainer implements Configurable {
             int bestFitness = chosen.getFitnessValue();
             if(bestFitness >= targetFitness-1)
             {
+                //Updates the run file with the newest information
+                config.lockSettings();
+                config.getEventManager().fireGeneticEvent(
+                        new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, genotype ) );
+
                 new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/").mkdir();
 
                 db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");

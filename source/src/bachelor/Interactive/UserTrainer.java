@@ -19,6 +19,7 @@ import org.jgap.*;
 import org.jgap.event.GeneticEvent;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -70,7 +71,6 @@ public class UserTrainer implements Configurable {
 
     //The loaded chromosome by the user and the forkedFrom id
     private Chromosome loadedChrom;
-    private boolean loadedChromSurvives;
     private int forkedFrom;
 
     public Chromosome getPreviewChrom() {
@@ -80,6 +80,10 @@ public class UserTrainer implements Configurable {
     //The preview chromosome from the server
     private Chromosome previewChrom;
 
+    //Properties/new run
+    private Properties props;
+    private boolean isNewRun;
+
     //For gif creation and handling in UserInterface
     private static FitnessFunction ff = new FitnessFunction();
 
@@ -88,11 +92,12 @@ public class UserTrainer implements Configurable {
      * @throws Throwable If initialization of Configuration object fails.
      */
     public UserTrainer() throws Throwable {
-        Properties props = new Properties("marioInteractive.properties");
+        props = new Properties("marioInteractive.properties");
 
         ff.generation = 0;
 
         csv = new CsvFormat();
+        isNewRun = true;
 
         //Initialize User Trainer
         try {
@@ -114,8 +119,8 @@ public class UserTrainer implements Configurable {
         ff.init(props);
         ff.levelOptions = "-vlx -500 -vly -500 -mix 16 -miy 223";
 
-        boolean doReset = props.getBooleanProperty(RESET_KEY, false);
-        if (doReset) {
+        //boolean doReset = props.getBooleanProperty(RESET_KEY, false);
+        if (isNewRun) {
             logger.warn("Resetting previous run !!!");
             Reset resetter = new Reset(props);
             resetter.setUserInteraction(false);
@@ -336,9 +341,12 @@ public class UserTrainer implements Configurable {
      * @param file To get the path in which we will load the chromosome
      * @throws Exception If I/O fails
      */
-    public void loadChromosome(File file) throws Exception {
+    public void loadChromosomes(File file) throws Exception {
         db.loadChromosomes(file);
         csv.loadCSVFromChromosome(file.getName());
+
+        isNewRun = false;
+        init(props);
     }
 
     /**
@@ -360,12 +368,17 @@ public class UserTrainer implements Configurable {
     }
 
     /**
-     * Saves the chosen chromosome to the specified path from the file
+     * Saves the chosen chromosomes to the specified path from the file
      * @param chroms Chromosomes to be saved
      * @param file To get the path in which we will save the chromosome
      * @throws Exception If I/O fails
      */
     public void saveChromosomes(ArrayList<Chromosome> chroms, File file) throws Exception {
+        //Updates the run file with the newest information
+        config.lockSettings();
+        config.getEventManager().fireGeneticEvent(
+                new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, genotype ) );
+
         db.saveChromosomes(chroms, file.getAbsolutePath());
         csv.generateCsvFileInteractive(file.getName());
     }
