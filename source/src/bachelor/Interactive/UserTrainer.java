@@ -69,9 +69,6 @@ public class UserTrainer implements Configurable {
     //Object to save as and load from csv format
     private CsvFormat csv;
 
-    //The loaded chromosome by the user and the forkedFrom id
-    private Chromosome loadedChrom;
-
     private int forkedFrom;
 
     public Chromosome getPreviewChrom() {
@@ -97,6 +94,7 @@ public class UserTrainer implements Configurable {
         props = new Properties("marioInteractive.properties");
 
         ff.generation = 0;
+        forkedFrom = 0;
 
         csv = new CsvFormat();
         isNewRun = true;
@@ -357,7 +355,10 @@ public class UserTrainer implements Configurable {
      * @throws Exception If connection fails
      */
     public void loadChromosomesServer(ArrayList<String> chroms, String runFile) throws Exception {
-        loadedChrom = db.loadChromosomesServer(chroms, runFile);
+        db.loadChromosomesServer(config, chroms, runFile);
+
+        isNewRun = false;
+        init(props);
     }
 
     /**

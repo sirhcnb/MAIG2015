@@ -38,8 +38,34 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         copyFile(file.getAbsolutePath() + "/run.xml", "./db/run/runtestrun.xml");
     }
 
-    public void loadChromosomesServer(ArrayList<Chromosome> chroms) {
+    public void loadChromosomesServer(Configuration config, ArrayList<String> chroms, String runFile) throws Exception {
+        FileOutputStream out = null;
 
+        for(int i = 0; i < chroms.size(); i++) {
+            Chromosome chrom = chromosomeFromXml(config, chroms.get(i));
+
+            //Save the chromosome string format into the xml file specified
+            try {
+                out = new FileOutputStream("./db/chromosome/chromosome" + chrom.getId() + ".xml" );
+                out.write(chroms.get(i).getBytes());
+                out.close();
+            }
+            finally {
+                if ( out != null )
+                    out.close();
+            }
+        }
+
+        //Save the runFile string format into xml file specified
+        try {
+            out = new FileOutputStream("./db/run/runtestrun.xml" );
+            out.write(runFile.getBytes());
+            out.close();
+        }
+        finally {
+            if ( out != null )
+                out.close();
+        }
     }
 
     /**

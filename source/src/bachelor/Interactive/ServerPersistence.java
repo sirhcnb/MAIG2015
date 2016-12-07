@@ -111,14 +111,8 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             // save chosenChrom as the first chromosome. We will preview this chromosome
             for(int i = 0; i < chrom.size(); i++) {
-                System.out.println(chrom.get(i).getId());
-
                 String xmlString = new XmlPersistableChromosome(chrom.get(i)).toXml();
                 st.setString(counter, xmlString);
-
-                System.out.println("****************************************");
-                System.out.println(xmlString);
-                System.out.println("****************************************");
                 counter++;
             }
 
@@ -175,15 +169,16 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             String genfit = rs.getString("genfit");
             int gen = rs.getInt("gen");
+            String runFile = rs.getString("runFile");
 
 
             //TODO: load into appropriate places (Done, need confirmation!)
-            UT.loadChromosomesServer(chroms);
+            UT.loadChromosomesServer(chroms, runFile);
             UT.setGenerationForkServer(gen, id); //TODO: Load ID into fork ID into appropriate place (0)
             UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results
-            System.out.format("%s, %s, %s\n", chroms, genfit, gen);
+            //System.out.format("%s, %s, %s, %s\n", chroms, genfit, gen, runFile);
 
             st.close();
 
@@ -326,6 +321,8 @@ public class ServerPersistence extends InteractiveFilePersistence {
                     @Override
                     public void handle(ActionEvent event) {
                         importFromDatabase(Integer.parseInt(hBox.getId()));
+
+                        UI.trainWithInteraction();
                     }
                 });
 
