@@ -1,5 +1,6 @@
 package bachelor.interactive;
 
+import com.anji.integration.XmlPersistableChromosome;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -15,6 +16,7 @@ import org.jgap.Chromosome;
 import org.jgap.Configuration;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 /**
  * Created by chris on 15-11-2016.
@@ -26,11 +28,15 @@ public class ServerPersistence extends InteractiveFilePersistence {
     Connection conn = null;
     String sqlUserName = "collmariouser";
     String password = "qwerty12345";
-    String url = "jdbc:mysql://178.62.20.78:3306/collmario";
+    String url = "jdbc:mysql://178.62.20.78:3306/bachelormario";
 
     public ServerPersistence(UserTrainer UT, UserInterface UI) {
         this.UT = UT;
         this.UI = UI;
+    }
+
+    public UserTrainer getUT() {
+        return UT;
     }
 
     // for testing the connection
@@ -64,32 +70,63 @@ public class ServerPersistence extends InteractiveFilePersistence {
         }
     }*/
 
-    public void uploadToDatabase(String chrom, String username, String comment, int gen, int fitness, String genfit, int forkedFrom) {
-        String query = "INSERT INTO cmario ("
-                + " chrom,"
+    public void uploadToDatabase(ArrayList<Chromosome> chrom, String username, String comment, int gen, int fitness, String genfit, int forkedFrom, String runFile, Chromosome chosenChrom) {
+        String query = "INSERT INTO collmario ("
+                + " id,"
                 + " username,"
                 + " comment,"
-                + " gen,"
-                + " id,"
-                + " fitness,"
                 + " genfit,"
-                + " forkedFrom ) VALUES ("
-                + "?, ?, ?, ?, null, ?, ?, ?)";
+                + " gen,"
+                + " fitness,"
+                + " forkedFrom,"
+                + " chrom1,"
+                + " chrom2,"
+                + " chrom3,"
+                + " chrom4,"
+                + " chrom5,"
+                + " chrom6,"
+                + " chrom7,"
+                + " chrom8,"
+                + " chrom9,"
+                + " runFile,"
+                + " prevChrom ) VALUES ("
+                + " null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(url, sqlUserName, password);
 
             System.out.println("Database connection established");
 
+            int counter = 7;
+
             // set all the preparedstatement parameters
             PreparedStatement st = conn.prepareStatement(query);
-            st.setString(1, chrom);
-            st.setString(2, username);
-            st.setString(3, comment);
+            st.setString(1, username);
+            st.setString(2, comment);
+            st.setString(3, genfit);
             st.setInt(4, gen);
             st.setInt(5, fitness);
-            st.setString(6, genfit);
-            st.setInt(7, forkedFrom);
+            st.setInt(6, forkedFrom);
+
+            // save chosenChrom as the first chromosome. We will preview this chromosome
+            for(int i = 0; i < chrom.size(); i++) {
+                System.out.println(chrom.get(i).getId());
+
+                String xmlString = new XmlPersistableChromosome(chrom.get(i)).toXml();
+                st.setString(counter, xmlString);
+
+                System.out.println("****************************************");
+                System.out.println(xmlString);
+                System.out.println("****************************************");
+                counter++;
+            }
+
+            st.setString(counter, runFile);
+
+            counter++;
+            String prevChromString = new XmlPersistableChromosome(chosenChrom).toXml();
+            st.setString(counter, prevChromString);
 
             // execute the preparedstatement insert
             st.executeUpdate();
@@ -117,7 +154,8 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT chrom, genfit, gen, forkedFrom FROM cmario WHERE ID=" + id;
+            String query = "SELECT chrom1, chrom2, chrom3, chrom4, chrom5, chrom6, chrom7, chrom8, chrom9, " +
+                    "genfit, gen, runFile FROM collmario WHERE ID=" + id;
 
             // create the java statement
             Statement st = conn.createStatement();
@@ -129,17 +167,23 @@ public class ServerPersistence extends InteractiveFilePersistence {
             rs.next();
 
             // show  resultset
-            String chrom = rs.getString("chrom");
+            ArrayList<String> chroms = new ArrayList<>();
+
+            for(int i = 1; i < 10; i++) {
+                chroms.add(rs.getString("chrom" + Integer.toString(i)));
+            }
+
             String genfit = rs.getString("genfit");
             int gen = rs.getInt("gen");
 
+
             //TODO: load into appropriate places (Done, need confirmation!)
-            UT.loadChromosomeServer(chrom);
-            UT.setGenerationServer(gen, id); //TODO: Load ID into fork ID into appropriate place (0)
+            UT.loadChromosomesServer(chroms);
+            UT.setGenerationForkServer(gen, id); //TODO: Load ID into fork ID into appropriate place (0)
             UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results
-            System.out.format("%s, %s, %s\n", chrom, genfit, gen);
+            System.out.format("%s, %s, %s\n", chroms, genfit, gen);
 
             st.close();
 
@@ -170,7 +214,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT chrom FROM cmario WHERE ID=" + id;
+            String query = "SELECT prevChrom FROM collmario WHERE ID=" + id;
 
             // create the java statement
             Statement st = conn.createStatement();
@@ -182,10 +226,10 @@ public class ServerPersistence extends InteractiveFilePersistence {
             rs.next();
 
             // show  resultset
-            String chrom = rs.getString("chrom");
+            String chrom = rs.getString("prevChrom");
 
             //Load into UserTrainer
-            UT.loadPreviewChromosome(chrom);
+            UT.loadPreviewChromosome(id, chrom);
 
             System.out.println(UT.getPreviewChrom().getId());
 
@@ -218,7 +262,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT * FROM cmario ORDER BY fitness DESC LIMIT " + amount;
+            String query = "SELECT * FROM collmario ORDER BY fitness DESC LIMIT " + amount;
 
             // create the java statement
             Statement st = conn.createStatement();

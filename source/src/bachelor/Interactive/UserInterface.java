@@ -25,10 +25,7 @@ import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 
 /**
  * Created by Pierre on 30-10-2016.
@@ -404,13 +401,15 @@ public class UserInterface extends Application {
                     alert.setTitle("Upload dialog");
                     alert.setHeaderText(null);
                     alert.setContentText("You have selected several chromosomes to upload. " +
-                            "Please select only one!");
+                            "Please select only one! The selected chromosome will be used as a preview" +
+                            "of your upload.");
 
                     alert.showAndWait();
                 } else if(amountOfChosen <= 0) {
                     alert.setTitle("Upload dialog");
                     alert.setHeaderText(null);
-                    alert.setContentText("Please select one chromosome to be uploaded!");
+                    alert.setContentText("Please select a chromosome to be uploaded! " +
+                            "The selected chromosome will be used as a preview of your upload.");
 
                     alert.showAndWait();
                 } else {
@@ -423,9 +422,10 @@ public class UserInterface extends Application {
                         }
                     }
 
-                    Chromosome chrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
+                    Chromosome chosenChrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
+                    ArrayList<Chromosome> chroms = (ArrayList) UT.genotype.getChromosomes();
 
-                    UploadInterface upload = new UploadInterface(si, UT.getCsv(), chrom, UT.getFf().generation, UT.getForkedFrom());
+                    UploadInterface upload = new UploadInterface(si, UT.getCsv(), chroms, UT.getFf().generation, UT.getForkedFrom(), chosenChrom);
 
                     Stage stage = new Stage();
                     upload.start(stage);
@@ -478,10 +478,6 @@ public class UserInterface extends Application {
         Task<String> task = new Task<String>() {
             @Override
             public String call() throws Exception {
-                root.getTop().setDisable(true);
-                root.getLeft().setDisable(true);
-                root.getCenter().setDisable(true);
-
                 String path;
                 try {
                     path = UT.runSinglePreview();
@@ -496,10 +492,6 @@ public class UserInterface extends Application {
         task.setOnSucceeded(new EventHandler<WorkerStateEvent>() {
             @Override
             public void handle(WorkerStateEvent e) {
-                root.getTop().setDisable(false);
-                root.getLeft().setDisable(false);
-                root.getCenter().setDisable(false);
-
                 setPreview(task.getValue());
             }
         });

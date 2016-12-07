@@ -71,6 +71,7 @@ public class UserTrainer implements Configurable {
 
     //The loaded chromosome by the user and the forkedFrom id
     private Chromosome loadedChrom;
+
     private int forkedFrom;
 
     public Chromosome getPreviewChrom() {
@@ -79,6 +80,7 @@ public class UserTrainer implements Configurable {
 
     //The preview chromosome from the server
     private Chromosome previewChrom;
+    private int previewChromID;
 
     //Properties/new run
     private Properties props;
@@ -201,7 +203,7 @@ public class UserTrainer implements Configurable {
         File chromFile = null;
         if(previewChrom != null)
         {
-            chromFile = new File(previewPath.toString() + "/" + previewChrom.getId().toString() + ".gif");
+            chromFile = new File(previewPath.toString() + "/" + previewChromID + ".gif");
 
             if(!chromFile.exists()) {
                 //ff.evaluateChromosome(previewChrom, evaluationType);
@@ -209,7 +211,7 @@ public class UserTrainer implements Configurable {
                 previewChromList.add(previewChrom);
                 ff.setEvaluationType(evaluationType);
                 ff.evaluate(previewChromList);
-                GifSequenceWriter.fileNumber = (int) (long) previewChrom.getId();
+                GifSequenceWriter.fileNumber = previewChromID;
                 GifSequenceWriter.createGIF(previewPath.toString() + "/");
             }
         }
@@ -350,21 +352,23 @@ public class UserTrainer implements Configurable {
     }
 
     /**
-     * Loads a chromosome from the server
-     * @param xmlFormat The chromosome to be loaded
+     * Loads chromosomes from the server
+     * @param chroms The chromosomes to be loaded
      * @throws Exception If connection fails
      */
-    public void loadChromosomeServer(String xmlFormat) throws Exception {
-        loadedChrom = db.loadChromosomeServer(config, xmlFormat);
+    public void loadChromosomesServer(ArrayList<String> chroms, String runFile) throws Exception {
+        loadedChrom = db.loadChromosomesServer(chroms, runFile);
     }
 
     /**
      * Loads a chromosome from the server into the preview
+     * @param id ID of the entry from database
      * @param xmlFormat The chromosome to be previewed
      * @throws Exception If connection fails
      */
-    public void loadPreviewChromosome(String xmlFormat) throws Exception {
-        previewChrom = db.loadChromosomeServer(config, xmlFormat);
+    public void loadPreviewChromosome(int id, String xmlFormat) throws Exception {
+        previewChrom = db.loadPrevChromosomeServer(config, xmlFormat);
+        previewChromID = id;
     }
 
     /**
@@ -408,9 +412,17 @@ public class UserTrainer implements Configurable {
      * Sets the generation received from the server
      * @param generation Generation received from the server when downloading
      */
-    public void setGenerationServer(int generation, int forkedFrom) {
+    public void setGenerationForkServer(int generation, int forkedFrom) {
         ff.generation = generation;
         ff.folderName = ff.generation;
         this.forkedFrom = forkedFrom;
+    }
+
+    /**
+     * Get the config object
+     * @return configurable object
+     */
+    public static NeatConfiguration getConfig() {
+        return config;
     }
 }

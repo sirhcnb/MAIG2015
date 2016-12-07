@@ -17,6 +17,14 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
 import org.jgap.Chromosome;
+import org.jgap.InvalidConfigurationException;
+import org.jgap.event.GeneticEvent;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * Created by Pierre on 15-11-2016.
@@ -35,16 +43,18 @@ public class UploadInterface extends Application {
     //Chromosome, generation and forkedFrom to be uploaded
     private ServerPersistence si;
     private CsvFormat csv;
-    private Chromosome uploadChrom;
+    private ArrayList<Chromosome> uploadChroms;
+    private Chromosome chosenChrom;
     private int generation;
     private int forkedFrom;
 
-    public UploadInterface(ServerPersistence si, CsvFormat csv, Chromosome uploadChrom, int generation, int forkedFrom) {
+    public UploadInterface(ServerPersistence si, CsvFormat csv, ArrayList<Chromosome> uploadChroms, int generation, int forkedFrom, Chromosome chosenChrom) {
         this.si = si;
         this.csv = csv;
-        this.uploadChrom = uploadChrom;
+        this.uploadChroms = uploadChroms;
         this.generation = generation;
         this.forkedFrom = forkedFrom;
+        this.chosenChrom = chosenChrom;
     }
 
     @Override
@@ -114,17 +124,37 @@ public class UploadInterface extends Application {
 
                     alert.showAndWait();
                 } else {
-                    String xmlString = new XmlPersistableChromosome(uploadChrom).toXml();
+                    /*String xmlString = new XmlPersistableChromosome(uploadChrom).toXml();
 
                     System.out.println("Xml string: " + xmlString + '\n');
                     System.out.println("Generation: " + generation + '\n');
                     System.out.println("Username: " + userNameText.getText());
                     System.out.println("Comment: " + commentText.getText());
                     System.out.println("Gen-Fit: " + csv.getFinalString().toString());
-                    System.out.println("forkedFrom: " + forkedFrom);
+                    System.out.println("forkedFrom: " + forkedFrom);*/
+
+
+                    StringBuilder sb = new StringBuilder();
+                    try {
+                        //Updates the run file with the newest information
+                        UserTrainer.getConfig().lockSettings();
+                        UserTrainer.getConfig().getEventManager().fireGeneticEvent(
+                                new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, si.getUT().genotype ) );
+
+                        BufferedReader br = new BufferedReader(new FileReader(new File("./db/run/runtestrun.xml")));
+                        String line;
+
+                        while((line = br.readLine()) != null){
+                            sb.append(line.trim());
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    System.out.println(sb.toString());
 
                     //TODO: access gif and genfit and add as parameters
-                    si.uploadToDatabase(xmlString, userNameText.getText(), commentText.getText(), generation, uploadChrom.getFitnessValue(), csv.getFinalString().toString(), forkedFrom);
+                    si.uploadToDatabase(uploadChroms, userNameText.getText(), commentText.getText(), generation, chosenChrom.getFitnessValue(), csv.getFinalString().toString(), forkedFrom, sb.toString(), chosenChrom);
 
                 }
 

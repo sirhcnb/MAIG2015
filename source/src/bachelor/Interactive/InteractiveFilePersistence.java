@@ -38,13 +38,17 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         copyFile(file.getAbsolutePath() + "/run.xml", "./db/run/runtestrun.xml");
     }
 
+    public void loadChromosomesServer(ArrayList<Chromosome> chroms) {
+
+    }
+
     /**
      * Load in the chosen chromosome from the server
      * @param config Config file to make the chromosome object
      * @param xmlFormat The xml format of our received chromosome
      * @return The chromosome object
      */
-    public Chromosome loadChromosomeServer(Configuration config, String xmlFormat) throws Exception {
+    public Chromosome loadPrevChromosomeServer(Configuration config, String xmlFormat) throws Exception {
         return chromosomeFromXml(config, xmlFormat);
     }
 
