@@ -53,7 +53,7 @@ public static boolean isFly = false;
 private static GameViewer GameViewer = null;
 //    public static boolean isTimer = true;
 
-public static int mariosecondMultiplier = 15;
+public static int mariosecondMultiplier = 40;
 
 public static boolean isPowerRestoration;
 

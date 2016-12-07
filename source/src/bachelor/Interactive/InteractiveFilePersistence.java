@@ -1,6 +1,8 @@
 package bachelor.interactive;
 
 import com.anji.integration.XmlPersistableChromosome;
+import org.apache.commons.io.FileUtils;
+import org.jfree.io.FileUtilities;
 import org.jgap.Chromosome;
 import org.jgap.Configuration;
 import org.w3c.dom.Attr;
@@ -29,13 +31,16 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
      * Load in the chromosomes and evolve to reproduce and populate according to these chromosomes
      */
     public void loadChromosomes(File file) throws Exception {
-        for(int i = 0; i < file.listFiles().length; i++) {
+        /*for(int i = 0; i < file.listFiles().length; i++) {
             if((file.listFiles()[i].getAbsolutePath()).contains("chromosome")) {
                 copyFile(file.listFiles()[i].getAbsolutePath(), "./db/chromosome/" + file.listFiles()[i].getName());
             }
         }
 
-        copyFile(file.getAbsolutePath() + "/run.xml", "./db/run/runtestrun.xml");
+        copyFile(file.getAbsolutePath() + "/run.xml", "./db/run/runtestrun.xml");*/
+
+        FileUtils.copyDirectory(new File(file.getAbsolutePath() + "/db"), new File("./db"));
+        FileUtils.copyDirectory(new File(file.getAbsolutePath() + "/nevt"), new File("./nevt"));
     }
 
     public void loadChromosomesServer(Configuration config, ArrayList<String> chroms, String runFile) throws Exception {
@@ -82,9 +87,12 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
      * Save the chromosomes in the specified path
      */
     public void saveChromosomes(ArrayList<Chromosome> chroms, String path) throws Exception {
-        for(int i = 0; i < chroms.size(); i++) {
+        /*for(int i = 0; i < chroms.size(); i++) {
             storeChromosome(chroms.get(i), path);
-        }
+        }*/
+
+        FileUtils.copyDirectory(new File("./db"), new File(path + "/db"));
+        FileUtils.copyDirectory(new File("./nevt"), new File(path + "/nevt"));
     }
 
     /**

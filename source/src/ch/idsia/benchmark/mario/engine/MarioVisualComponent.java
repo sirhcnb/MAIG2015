@@ -420,13 +420,13 @@ public void render(Graphics g)
     createImageAtXFrames(8, saveImages);
 
     /** BACHELOR STUFF, THE PATH MARIO IS MOVING. TODO: True if show path else false **/
-    drawMarioPath(g, false);
+    /*drawMarioPath(g, false);
 
     if(mario.x < halfWidth) {
         takeSnapshot(11);
     } else {
         takeSnapshot(10);
-    }
+    }*/
 
     /*****************************************************************/
     
