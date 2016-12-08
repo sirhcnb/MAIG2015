@@ -163,9 +163,12 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            String query = "SELECT chrom1, chrom2, chrom3, chrom4, chrom5, chrom6, chrom7, chrom8, chrom9, " +
-                    "genfit, gen, runFile FROM collmario WHERE ID=" + id;
+            String query = "SELECT gen, genfit, nextChromId, runFile, nevtComplexity," +
+                    "nevtFitness, nevtSpecies, neatId FROM collmario WHERE id=" + id;
 
+            String chromQuery = "SELECT * FROM chromosome WHERE collmario_id=" + id;
+
+            // query part
             // create the java statement
             Statement st = conn.createStatement();
 
@@ -176,26 +179,39 @@ public class ServerPersistence extends InteractiveFilePersistence {
             rs.next();
 
             // show  resultset
+            int gen = rs.getInt("gen");
+            String genfit = rs.getString("genfit");
+            String nextChromId = rs.getString("nextChromId");
+            String runFile = rs.getString("runFile");
+            String nevtComplexity = rs.getString("nevtComplexity");
+            String nevtFitness = rs.getString("nevtFitness");
+            String nevtSpecies = rs.getString("nevtSpecies");
+            String neatId = rs.getString("neatId");
+
+            st.close();
+
+            // chromQuery part
+            //create the java statement
+            Statement chromSt = conn.createStatement();
+
+            // execute the chromQuery, and get a java resultset
+            ResultSet chromRs = chromSt.executeQuery(chromQuery);
+
             ArrayList<String> chroms = new ArrayList<>();
 
-            for(int i = 1; i < 10; i++) {
-                chroms.add(rs.getString("chrom" + Integer.toString(i)));
+            while(chromRs.next()) {
+                chroms.add(chromRs.getString("chrom"));
             }
 
-            String genfit = rs.getString("genfit");
-            int gen = rs.getInt("gen");
-            String runFile = rs.getString("runFile");
-
+            System.out.println(chroms.size());
 
             //TODO: load into appropriate places (Done, need confirmation!)
-            UT.loadChromosomesServer(chroms, runFile);
+            UT.loadChromosomesServer(chroms, runFile, nextChromId, nevtComplexity, nevtFitness, nevtSpecies, neatId);
             UT.setGenerationForkServer(gen, id); //TODO: Load ID into fork ID into appropriate place (0)
             UT.getCsv().loadCSVFromChromosomeServer(genfit);
 
             // print the results
             //System.out.format("%s, %s, %s, %s\n", chroms, genfit, gen, runFile);
-
-            st.close();
 
         }
         catch (Exception e) {

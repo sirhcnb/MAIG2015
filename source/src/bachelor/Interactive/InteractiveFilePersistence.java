@@ -43,7 +43,9 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         FileUtils.copyDirectory(new File(file.getAbsolutePath() + "/nevt"), new File("./nevt"));
     }
 
-    public void loadChromosomesServer(Configuration config, ArrayList<String> chroms, String runFile) throws Exception {
+    public void loadChromosomesServer(Configuration config, ArrayList<String> chroms, String runFile,
+                                      String nextChromId, String nevtComplexity, String nevtFitness,
+                                      String nevtSpecies, String neatId) throws Exception {
         FileOutputStream out = null;
 
         for(int i = 0; i < chroms.size(); i++) {
@@ -61,10 +63,30 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
             }
         }
 
-        //Save the runFile string format into xml file specified
+        //Save the files from database
         try {
             out = new FileOutputStream("./db/run/runtestrun.xml" );
             out.write(runFile.getBytes());
+            out.close();
+
+            out = new FileOutputStream("./db/id.xml" );
+            out.write(nextChromId.getBytes());
+            out.close();
+
+            out = new FileOutputStream("./db/neatid.xml" );
+            out.write(neatId.getBytes());
+            out.close();
+
+            out = new FileOutputStream("./nevt/complexity/complexity.xml" );
+            out.write(nevtComplexity.getBytes());
+            out.close();
+
+            out = new FileOutputStream("./nevt/fitness/fitness.xml" );
+            out.write(nevtFitness.getBytes());
+            out.close();
+
+            out = new FileOutputStream("./nevt/species/species.xml" );
+            out.write(nevtSpecies.getBytes());
             out.close();
         }
         finally {

@@ -354,8 +354,10 @@ public class UserTrainer implements Configurable {
      * @param chroms The chromosomes to be loaded
      * @throws Exception If connection fails
      */
-    public void loadChromosomesServer(ArrayList<String> chroms, String runFile) throws Exception {
-        db.loadChromosomesServer(config, chroms, runFile);
+    public void loadChromosomesServer(ArrayList<String> chroms, String runFile,
+                                      String nextChromId, String nevtComplexity, String nevtFitness,
+                                      String nevtSpecies, String neatId) throws Exception {
+        db.loadChromosomesServer(config, chroms, runFile, nextChromId, nevtComplexity, nevtFitness, nevtSpecies, neatId);
 
         isNewRun = false;
         init(props);
