@@ -88,11 +88,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
                 + " nevtComplexity,"
                 + " nevtFitness,"
                 + " nevtSpecies,"
-                + " neatId,"
-                + " chrom8,"
-                + " chrom9,"
-                + " runFile,"
-                + " prevChrom ) VALUES ("
+                + " neatId ) VALUES ("
                 + " null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
