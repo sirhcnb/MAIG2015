@@ -20,6 +20,7 @@ import org.jgap.Genotype;
 import org.jgap.event.GeneticEvent;
 import own.FilePersistenceMario;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -193,12 +194,13 @@ public class MarioTrainer implements Configurable {
             //Get chromosome with best fitness
             Chromosome chosen = genotype.getFittestChromosome();
 
-            csv.writeSingleToString(chosen.getFitnessValue(), ff.generation);
+            csv.writeSingleToString(chosen.getFitnessValue(), ff.generation-1);
 
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
-            int bestFitness = chosen.getFitnessValue();
-            if(bestFitness >= targetFitness-1 || generation == 30)
+            if(chosen.getFitnessValue() >= targetFitness-1 || generation == 30)
             {
+                System.out.println();
+
                 //Updates the run file with the newest information
                 config.lockSettings();
                 config.getEventManager().fireGeneticEvent(
@@ -214,6 +216,10 @@ public class MarioTrainer implements Configurable {
                         new File("./nevt"),
                         new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/nevt")
                 );
+
+                FileOutputStream out = new FileOutputStream(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/genFork.xml");
+                out.write(("<GenFork><generation id=\"" + ff.generation + "\"/><forkedFrom id=\"0\"/></GenFork>").getBytes());
+                out.close();
 
                 /*db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
                 System.out.println("Best automated chromosome saved to the desktop successfully!");*/
@@ -248,7 +254,7 @@ public class MarioTrainer implements Configurable {
     public static void main(String[] args) throws Throwable {
         Properties props = new Properties("marioAuto.properties");
         ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223 -ld 1 -ll 500";
+        ff.levelOptions = "-mix 16 -miy 223 -ld 1";
         ff.generation = 0;
 
         try {
