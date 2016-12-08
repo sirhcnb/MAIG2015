@@ -294,7 +294,7 @@ public class UserTrainer implements Configurable {
      * Makes a new random genotype to start a new run from
      * @throws InvalidConfigurationException If config doesn't work with the genotype
      */
-    public void newRun() throws InvalidConfigurationException {
+    public void newRun() throws Exception {
         //Start anew from generation 0
         ff.generation = 0;
         ff.folderName = 0;
@@ -302,6 +302,9 @@ public class UserTrainer implements Configurable {
 
         csv = new CsvFormat();
         genotype = Genotype.randomInitialGenotype(config);
+
+        isNewRun = true;
+        init(props);
     }
 
     /**
