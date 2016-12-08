@@ -125,10 +125,13 @@ public class ServerPersistence extends InteractiveFilePersistence {
             // execute the preparedstatement insert
             st.executeUpdate();
 
+            // Get the generated key from the table
             ResultSet rs = st.getGeneratedKeys();
             rs.next();
             int collmarioId = rs.getInt(1);
-
+            System.out.println(collmarioId);
+			
+            //Finally close the preparedstatement
             st.close();
 
             for (int i = 0; i < chrom.size(); i++) {
