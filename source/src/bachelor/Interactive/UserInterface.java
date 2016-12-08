@@ -217,6 +217,7 @@ public class UserInterface extends Application {
 
         //Initialize breed button and add listener to do breed functionality
         Button breed = new Button("Breed");
+        breed.setPrefHeight(100.0);
         breed.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
