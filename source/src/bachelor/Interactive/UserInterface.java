@@ -253,12 +253,13 @@ public class UserInterface extends Application {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(new Runnable() {
+                Task<Void> task = new Task<Void>() {
                     @Override
-                    public void run() {
+                    protected Void call() throws Exception {
                         leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
+                        return null;
                     }
-                });
+                };
             }
         }, 0, 60000);
 
