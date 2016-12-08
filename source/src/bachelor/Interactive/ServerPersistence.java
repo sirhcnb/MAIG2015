@@ -95,7 +95,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
         String chromQuery = "INSERT INTO chromosome ("
                 + " collmario_id,"
                 + " chrom) VALUES ("
-                + " ?, ?";
+                + " ?, ?)";
 
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
@@ -122,23 +122,25 @@ public class ServerPersistence extends InteractiveFilePersistence {
             st.setString(12, nevtSpecies);
             st.setString(13, neatId);
 
+            // execute the preparedstatement insert
+            st.executeUpdate();
+
+            // Get the generated key from the ta
             ResultSet rs = st.getGeneratedKeys();
             rs.next();
             int collmarioId = rs.getInt(1);
+            System.out.println(collmarioId);
 
-            // execute the preparedstatement insert
-            st.executeUpdate();
+            //Finally close the preparedstatement
             st.close();
 
-            PreparedStatement chromStatement = null;
             for (int i = 0; i < chrom.size(); i++) {
-                chromStatement = conn.prepareStatement(chromQuery);
+                PreparedStatement chromStatement = conn.prepareStatement(chromQuery);
                 chromStatement.setInt(1, collmarioId);
                 chromStatement.setString(2, chrom.get(i));
                 chromStatement.executeUpdate();
                 chromStatement.close();
             }
-            chromStatement.close();
         }
         catch (Exception e) {
             System.err.println("Cannot connect to database server");
