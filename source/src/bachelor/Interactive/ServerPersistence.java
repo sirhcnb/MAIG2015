@@ -70,7 +70,10 @@ public class ServerPersistence extends InteractiveFilePersistence {
         }
     }*/
 
-    public void uploadToDatabase(ArrayList<Chromosome> chrom, String username, String comment, int gen, int fitness, String genfit, int forkedFrom, String runFile, Chromosome chosenChrom) {
+    public void uploadToDatabase(ArrayList<Chromosome> chrom, String username, String comment, int gen, int fitness,
+                                 String genfit, int forkedFrom, String runFile, Chromosome chosenChrom,
+                                 String nextChromeId, String nevtComplexity, String nevtFitness, String nevtSpecies,
+                                 String neatId) {
         String query = "INSERT INTO collmario ("
                 + " id,"
                 + " username,"
@@ -98,29 +101,24 @@ public class ServerPersistence extends InteractiveFilePersistence {
 
             System.out.println("Database connection established");
 
-            int counter = 7;
-
             // set all the preparedstatement parameters
             PreparedStatement st = conn.prepareStatement(query);
-            st.setString(1, username);
-            st.setString(2, comment);
-            st.setString(3, genfit);
-            st.setInt(4, gen);
-            st.setInt(5, fitness);
-            st.setInt(6, forkedFrom);
+            st.setInt(1, gen);
+            st.setInt(2, fitness);
+            st.setInt(3, forkedFrom);
+            st.setString(4, username);
+            st.setString(5, comment);
+            st.setString(6, genfit);
+            st.setString(7, nextChromeId);
+            st.setString(8, runFile);
 
-            // save chosenChrom as the first chromosome. We will preview this chromosome
-            for(int i = 0; i < chrom.size(); i++) {
-                String xmlString = new XmlPersistableChromosome(chrom.get(i)).toXml();
-                st.setString(counter, xmlString);
-                counter++;
-            }
+            XmlPersistableChromosome preview = new XmlPersistableChromosome(chosenChrom);
+            st.setString(9, preview.toXml());
 
-            st.setString(counter, runFile);
-
-            counter++;
-            String prevChromString = new XmlPersistableChromosome(chosenChrom).toXml();
-            st.setString(counter, prevChromString);
+            st.setString(10, nevtComplexity);
+            st.setString(11, nevtFitness);
+            st.setString(12, nevtSpecies);
+            st.setString(13, neatId);
 
             // execute the preparedstatement insert
             st.executeUpdate();
