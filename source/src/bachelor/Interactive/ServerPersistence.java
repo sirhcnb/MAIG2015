@@ -12,6 +12,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import org.jgap.Chromosome;
 import org.jgap.Configuration;
 
@@ -70,7 +71,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
         }
     }*/
 
-    public void uploadToDatabase(ArrayList<Chromosome> chrom, String username, String comment, int gen, int fitness,
+    public void uploadToDatabase(ArrayList<String> chrom, String username, String comment, int gen, int fitness,
                                  String genfit, int forkedFrom, String runFile, Chromosome chosenChrom,
                                  String nextChromeId, String nevtComplexity, String nevtFitness, String nevtSpecies,
                                  String neatId) {
@@ -91,6 +92,11 @@ public class ServerPersistence extends InteractiveFilePersistence {
                 + " neatId ) VALUES ("
                 + " null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
+        String chromQuery = "INSERT INTO chromosome ("
+                + " collmario_id,"
+                + " chrom) VALUES ("
+                + " ?, ?";
+
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(url, sqlUserName, password);
@@ -98,7 +104,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
             System.out.println("Database connection established");
 
             // set all the preparedstatement parameters
-            PreparedStatement st = conn.prepareStatement(query);
+            PreparedStatement st = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS);
             st.setInt(1, gen);
             st.setInt(2, fitness);
             st.setInt(3, forkedFrom);
@@ -116,10 +122,23 @@ public class ServerPersistence extends InteractiveFilePersistence {
             st.setString(12, nevtSpecies);
             st.setString(13, neatId);
 
+            ResultSet rs = st.getGeneratedKeys();
+            rs.next();
+            int collmarioId = rs.getInt(1);
+
             // execute the preparedstatement insert
             st.executeUpdate();
             st.close();
 
+            PreparedStatement chromStatement = null;
+            for (int i = 0; i < chrom.size(); i++) {
+                chromStatement = conn.prepareStatement(chromQuery);
+                chromStatement.setInt(1, collmarioId);
+                chromStatement.setString(2, chrom.get(i));
+                chromStatement.executeUpdate();
+                chromStatement.close();
+            }
+            chromStatement.close();
         }
         catch (Exception e) {
             System.err.println("Cannot connect to database server");
