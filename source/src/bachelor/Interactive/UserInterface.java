@@ -75,7 +75,7 @@ public class UserInterface extends Application {
             System.out.println(th);
         }
 
-        primaryStage.setScene(new Scene(root, 1700, 800));
+        primaryStage.setScene(new Scene(root, 1700, 870));
         primaryStage.setResizable(false);
         primaryStage.setTitle("Interactive Mario Trainer");
         primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
@@ -217,7 +217,7 @@ public class UserInterface extends Application {
 
         //Initialize breed button and add listener to do breed functionality
         Button breed = new Button("Breed");
-        breed.setPrefHeight(100.0);
+        breed.setPrefHeight(75.0);
         breed.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent event) {
@@ -253,12 +253,13 @@ public class UserInterface extends Application {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Platform.runLater(new Runnable() {
+                Task<Void> task = new Task<Void>() {
                     @Override
-                    public void run() {
+                    protected Void call() throws Exception {
                         leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
+                        return null;
                     }
-                });
+                };
             }
         }, 0, 60000);
 
