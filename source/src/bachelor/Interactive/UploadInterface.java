@@ -43,12 +43,12 @@ public class UploadInterface extends Application {
     //Chromosome, generation and forkedFrom to be uploaded
     private ServerPersistence si;
     private CsvFormat csv;
-    private ArrayList<Chromosome> uploadChroms;
+    private ArrayList<String> uploadChroms;
     private Chromosome chosenChrom;
     private int generation;
     private int forkedFrom;
 
-    public UploadInterface(ServerPersistence si, CsvFormat csv, ArrayList<Chromosome> uploadChroms, int generation, int forkedFrom, Chromosome chosenChrom) {
+    public UploadInterface(ServerPersistence si, CsvFormat csv, ArrayList<String> uploadChroms, int generation, int forkedFrom, Chromosome chosenChrom) {
         this.si = si;
         this.csv = csv;
         this.uploadChroms = uploadChroms;
@@ -124,37 +124,71 @@ public class UploadInterface extends Application {
 
                     alert.showAndWait();
                 } else {
-                    /*String xmlString = new XmlPersistableChromosome(uploadChrom).toXml();
-
-                    System.out.println("Xml string: " + xmlString + '\n');
-                    System.out.println("Generation: " + generation + '\n');
-                    System.out.println("Username: " + userNameText.getText());
-                    System.out.println("Comment: " + commentText.getText());
-                    System.out.println("Gen-Fit: " + csv.getFinalString().toString());
-                    System.out.println("forkedFrom: " + forkedFrom);*/
-
-
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder runtestrun = new StringBuilder();
+                    StringBuilder nextChromeId = new StringBuilder();
+                    StringBuilder nevtComplexity = new StringBuilder();
+                    StringBuilder nevtFitness = new StringBuilder();
+                    StringBuilder nevtSpecies = new StringBuilder();
+                    StringBuilder neatId = new StringBuilder();
                     try {
                         //Updates the run file with the newest information
                         UserTrainer.getConfig().lockSettings();
                         UserTrainer.getConfig().getEventManager().fireGeneticEvent(
                                 new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, si.getUT().genotype ) );
 
+                        //RunFile
                         BufferedReader br = new BufferedReader(new FileReader(new File("./db/run/runtestrun.xml")));
                         String line;
 
                         while((line = br.readLine()) != null){
-                            sb.append(line.trim());
+                            runtestrun.append(line.trim());
+                        }
+
+                        //db id file
+                        br = new BufferedReader(new FileReader(new File("./db/id.xml")));
+
+                        while((line = br.readLine()) != null){
+                            nextChromeId.append(line.trim());
+                        }
+
+                        //nevtComplexity
+                        br = new BufferedReader(new FileReader(new File("./nevt/complexity/complexity.xml")));
+
+                        while((line = br.readLine()) != null){
+                            nevtComplexity.append(line.trim());
+                        }
+
+                        //nevtFitness
+                        br = new BufferedReader(new FileReader(new File("./nevt/fitness/fitness.xml")));
+
+                        while((line = br.readLine()) != null){
+                            nevtFitness.append(line.trim());
+                        }
+
+                        //nevtSpecies
+                        br = new BufferedReader(new FileReader(new File("./nevt/species/species.xml")));
+
+                        while((line = br.readLine()) != null){
+                            nevtSpecies.append(line.trim());
+                        }
+
+                        //neatId
+                        br = new BufferedReader(new FileReader(new File("./db/neatid.xml")));
+
+                        while((line = br.readLine()) != null){
+                            neatId.append(line.trim());
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
-                    System.out.println(sb.toString());
+
 
                     //TODO: access gif and genfit and add as parameters
-                    si.uploadToDatabase(uploadChroms, userNameText.getText(), commentText.getText(), generation, chosenChrom.getFitnessValue(), csv.getFinalString().toString(), forkedFrom, sb.toString(), chosenChrom);
+                    si.uploadToDatabase(uploadChroms, userNameText.getText(), commentText.getText(), generation,
+                            chosenChrom.getFitnessValue(), csv.getFinalString().toString(), forkedFrom,
+                            runtestrun.toString(), chosenChrom, nextChromeId.toString(), nevtComplexity.toString(),
+                            nevtFitness.toString(), nevtSpecies.toString(), neatId.toString());
 
                 }
 

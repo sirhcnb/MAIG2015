@@ -24,7 +24,7 @@ import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
 
-import java.io.File;
+import java.io.*;
 import java.util.*;
 
 /**
@@ -425,7 +425,27 @@ public class UserInterface extends Application {
                     }
 
                     Chromosome chosenChrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
-                    ArrayList<Chromosome> chroms = (ArrayList) UT.genotype.getChromosomes();
+                    ArrayList<String> chroms = new ArrayList<>();
+
+                    File chromFolder = new File("./db/chromosome");
+
+                    for(int i = 0; i < chromFolder.listFiles().length; i++) {
+                        if((chromFolder.listFiles()[i].getAbsolutePath()).contains("chromosome")) {
+                            try {
+                                BufferedReader br = new BufferedReader(new FileReader(chromFolder.listFiles()[i].getAbsolutePath()));
+                                String line;
+                                StringBuilder sb = new StringBuilder();
+
+                                while((line = br.readLine()) != null){
+                                    sb.append(line.trim());
+                                }
+
+                                chroms.add(sb.toString());
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
 
                     UploadInterface upload = new UploadInterface(si, UT.getCsv(), chroms, UT.getFf().generation, UT.getForkedFrom(), chosenChrom);
 

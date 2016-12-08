@@ -188,6 +188,7 @@ public class InteractiveFilePersistence extends FilePersistenceMario {
         }
 
         String xml = sb.toString();
+        br.close();
 
         ByteArrayInputStream in = new ByteArrayInputStream(xml.getBytes());
         DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
