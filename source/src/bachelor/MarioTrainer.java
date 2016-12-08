@@ -12,6 +12,7 @@ import com.anji.util.Configurable;
 import com.anji.util.Properties;
 import com.anji.util.Reset;
 import iec.GifSequenceWriter;
+import org.apache.commons.io.FileUtils;
 import org.apache.log4j.Logger;
 import org.jgap.BulkFitnessFunction;
 import org.jgap.Chromosome;
@@ -196,7 +197,7 @@ public class MarioTrainer implements Configurable {
 
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
             int bestFitness = chosen.getFitnessValue();
-            if(bestFitness >= targetFitness-1)
+            if(bestFitness >= targetFitness-1 || generation == 30)
             {
                 //Updates the run file with the newest information
                 config.lockSettings();
@@ -205,7 +206,16 @@ public class MarioTrainer implements Configurable {
 
                 new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/").mkdir();
 
-                db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
+                FileUtils.copyDirectory(
+                        new File("./db"),
+                        new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/db")
+                );
+                FileUtils.copyDirectory(
+                        new File("./nevt"),
+                        new File(System.getProperty("user.home") + "/Desktop/bestAutoChromosome/nevt")
+                );
+
+                /*db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
                 System.out.println("Best automated chromosome saved to the desktop successfully!");
 
                 csv.generateCsvFileAuto();
@@ -214,7 +224,7 @@ public class MarioTrainer implements Configurable {
                 InteractiveFilePersistence.copyFile(
                         "./db/run/runtestrun.xml",
                         System.getProperty("user.home") + "/Desktop/bestAutoChromosome/run.xml"
-                        );
+                );*/
                 break;
             }
 
