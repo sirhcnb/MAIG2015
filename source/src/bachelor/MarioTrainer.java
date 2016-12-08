@@ -216,7 +216,7 @@ public class MarioTrainer implements Configurable {
                 );
 
                 /*db.saveChromosomes(chroms, System.getProperty("user.home") + "/Desktop/bestAutoChromosome/");
-                System.out.println("Best automated chromosome saved to the desktop successfully!");
+                System.out.println("Best automated chromosome saved to the desktop successfully!");*/
 
                 csv.generateCsvFileAuto();
                 System.out.println("GenFit for best automated chromosome saved to the desktop successfully!");
@@ -224,7 +224,7 @@ public class MarioTrainer implements Configurable {
                 InteractiveFilePersistence.copyFile(
                         "./db/run/runtestrun.xml",
                         System.getProperty("user.home") + "/Desktop/bestAutoChromosome/run.xml"
-                );*/
+                );
                 break;
             }
 
