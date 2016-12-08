@@ -291,7 +291,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
                 String comment = rs.getString("comment");
 
                 // print the results
-                System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
+                //System.out.format("%s, %s, %s, %s, %s\n", cid, username, gen, fitness, comment);
 
                 HBox hBox = new HBox();
                 hBox.setSpacing(20.0);

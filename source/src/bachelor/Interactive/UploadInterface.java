@@ -131,11 +131,6 @@ public class UploadInterface extends Application {
                     StringBuilder nevtSpecies = new StringBuilder();
                     StringBuilder neatId = new StringBuilder();
                     try {
-                        //Updates the run file with the newest information
-                        UserTrainer.getConfig().lockSettings();
-                        UserTrainer.getConfig().getEventManager().fireGeneticEvent(
-                                new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, si.getUT().genotype ) );
-
                         //RunFile
                         BufferedReader br = new BufferedReader(new FileReader(new File("./db/run/runtestrun.xml")));
                         String line;

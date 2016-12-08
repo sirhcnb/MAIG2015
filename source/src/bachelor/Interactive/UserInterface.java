@@ -23,6 +23,8 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import org.jgap.Chromosome;
+import org.jgap.InvalidConfigurationException;
+import org.jgap.event.GeneticEvent;
 
 import java.io.*;
 import java.util.*;
@@ -253,13 +255,12 @@ public class UserInterface extends Application {
         timer.scheduleAtFixedRate(new TimerTask() {
             @Override
             public void run() {
-                Task<Void> task = new Task<Void>() {
+                Platform.runLater(new Runnable() {
                     @Override
-                    protected Void call() throws Exception {
+                    public void run() {
                         leaderBoard.setItems(si.importLeaderboard(leaderBoardAmount));
-                        return null;
                     }
-                };
+                });
             }
         }, 0, 60000);
 
@@ -422,6 +423,15 @@ public class UserInterface extends Application {
                             uploadChromosome = i;
                             break;
                         }
+                    }
+
+                    //Updates the run file with the newest information
+                    try {
+                        UserTrainer.getConfig().lockSettings();
+                        UserTrainer.getConfig().getEventManager().fireGeneticEvent(
+                                new GeneticEvent( GeneticEvent.GENOTYPE_EVALUATED_EVENT, si.getUT().genotype ) );
+                    } catch (InvalidConfigurationException e) {
+                        e.printStackTrace();
                     }
 
                     Chromosome chosenChrom = (Chromosome) UT.genotype.getChromosomes().get(uploadChromosome);
