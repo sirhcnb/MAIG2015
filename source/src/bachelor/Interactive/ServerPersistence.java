@@ -73,24 +73,24 @@ public class ServerPersistence extends InteractiveFilePersistence {
     public void uploadToDatabase(ArrayList<Chromosome> chrom, String username, String comment, int gen, int fitness, String genfit, int forkedFrom, String runFile, Chromosome chosenChrom) {
         String query = "INSERT INTO collmario ("
                 + " id,"
-                + " username,"
-                + " comment,"
-                + " genfit,"
                 + " gen,"
                 + " fitness,"
                 + " forkedFrom,"
-                + " chrom1,"
-                + " chrom2,"
-                + " chrom3,"
-                + " chrom4,"
-                + " chrom5,"
-                + " chrom6,"
-                + " chrom7,"
+                + " username,"
+                + " comment,"
+                + " genfit,"
+                + " nextChromId,"
+                + " runFile,"
+                + " prevChrom,"
+                + " nevtComplexity,"
+                + " nevtFitness,"
+                + " nevtSpecies,"
+                + " neatId,"
                 + " chrom8,"
                 + " chrom9,"
                 + " runFile,"
                 + " prevChrom ) VALUES ("
-                + " null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )";
+                + " null, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try {
             Class.forName("com.mysql.jdbc.Driver").newInstance();
