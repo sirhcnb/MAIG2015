@@ -117,7 +117,7 @@ public class UserTrainer implements Configurable {
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
-        ff.levelOptions = "-vlx -500 -vly -500 -mix 16 -miy 223";
+        ff.levelOptions = "-mix 16 -miy 223 -ld 1 -ll 500";
 
         //boolean doReset = props.getBooleanProperty(RESET_KEY, false);
         if (isNewRun) {

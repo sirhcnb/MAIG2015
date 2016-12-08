@@ -248,7 +248,7 @@ public class MarioTrainer implements Configurable {
     public static void main(String[] args) throws Throwable {
         Properties props = new Properties("marioAuto.properties");
         ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223";
+        ff.levelOptions = "-mix 16 -miy 223 -ld 1 -ll 500";
         ff.generation = 0;
 
         try {
