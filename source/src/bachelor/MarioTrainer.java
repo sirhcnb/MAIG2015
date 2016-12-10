@@ -197,10 +197,8 @@ public class MarioTrainer implements Configurable {
             csv.writeSingleToString(chosen.getFitnessValue(), ff.generation-1);
 
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
-            if(chosen.getFitnessValue() >= targetFitness-1 || generation == 30)
+            if(/*chosen.getFitnessValue() >= targetFitness-1 ||*/ generation == 30)
             {
-                System.out.println();
-
                 //Updates the run file with the newest information
                 config.lockSettings();
                 config.getEventManager().fireGeneticEvent(
