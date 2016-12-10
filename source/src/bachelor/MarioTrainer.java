@@ -91,7 +91,8 @@ public class MarioTrainer implements Configurable {
     @Override
     public void init(Properties props) throws Exception {
         ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223";
+        ff.levelOptions = "-mix 16 -miy 223 -ld 1";
+        ff.generation = 0;
 
         boolean doReset = props.getBooleanProperty(RESET_KEY, false);
         if (doReset) {
@@ -170,7 +171,7 @@ public class MarioTrainer implements Configurable {
             logger.info("Generation " + generation + ": start");
 
             //Create gif folder for specific fitness function purpose
-            new File("db/gifs/automated" + folderName).mkdirs();
+            new File("db/gifs/automated/" + folderName).mkdirs();
 
             //Get all the chromosomes (for evaluation)
             ArrayList<Chromosome> chroms = (ArrayList<Chromosome>) genotype.getChromosomes();
@@ -187,17 +188,16 @@ public class MarioTrainer implements Configurable {
                 int fitness = ff.evaluateChromosome(chrommie, evaluationType);
                 chrommie.setFitnessValue(fitness);
             }*/
-
-            //ff.generation++;
-            System.out.println("Generation after record: " + ff.generation + " | " + ff);
-
-            //Get chromosome with best fitness
             Chromosome chosen = genotype.getFittestChromosome();
 
             csv.writeSingleToString(chosen.getFitnessValue(), ff.generation-1);
+            System.out.println("Generation after record: " + ff.generation + " | " + ff);
+
+            System.out.println("fittest: " + chosen.getId());
+            System.out.println("Fitness: " + chosen.getFitnessValue());
 
             //If fitness value hits the tartet, stop evolving and save the chromosome to desktop
-            if(/*chosen.getFitnessValue() >= targetFitness-1 ||*/ generation == 29)
+            if(/*chosen.getFitnessValue() >= targetFitness-1 ||*/ ff.generation == 29)
             {
                 //Updates the run file with the newest information
                 config.lockSettings();
@@ -251,9 +251,6 @@ public class MarioTrainer implements Configurable {
      */
     public static void main(String[] args) throws Throwable {
         Properties props = new Properties("marioAuto.properties");
-        ff.init(props);
-        ff.levelOptions = "-mix 16 -miy 223 -ld 1";
-        ff.generation = 0;
 
         try {
             MarioTrainer mT = new MarioTrainer();
