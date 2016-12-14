@@ -404,7 +404,7 @@ public class UserInterface extends Application {
                     alert.setTitle("Upload dialog");
                     alert.setHeaderText(null);
                     alert.setContentText("You have selected several chromosomes to upload. " +
-                            "Please select only one! The selected chromosome will be used as a preview" +
+                            "Please select only one! The selected chromosome will be used as a preview " +
                             "of your upload.");
 
                     alert.showAndWait();

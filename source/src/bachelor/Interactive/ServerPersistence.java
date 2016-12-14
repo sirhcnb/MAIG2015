@@ -41,21 +41,39 @@ public class ServerPersistence extends InteractiveFilePersistence {
     }
 
     // for testing the connection
-    /*public static void main(String[] args) {
+    public static void main(String[] args) {
         Connection conn = null;
 
         try {
             String sqlUserName = "collmariouser";
             String password = "qwerty12345";
 
-            String url = "jdbc:mysql://178.62.20.78:3306/collmario";
+            String url = "jdbc:mysql://178.62.20.78:3306/bachelormario";
             Class.forName("com.mysql.jdbc.Driver").newInstance();
             conn = DriverManager.getConnection(url, sqlUserName, password);
             System.out.println("Database connection established");
 
-            ServerPersistence si = new ServerPersistence();
-            //si.importFromDatabase(1);
-            si.importLeaderboard();
+            String query = "SELECT id, username, forkedFrom, fitness, gen FROM collmario";
+
+            Statement st = conn.createStatement();
+            ResultSet rs = st.executeQuery(query);
+
+            while (rs.next()) {
+                int id = rs.getInt("id");
+                String username = rs.getString("username");
+                int forkedFrom = rs.getInt("forkedFrom");
+                int fitness = rs.getInt("fitness");
+                int gen = rs.getInt("gen");
+                System.out.format("%s, %s, %s, %s, %s\n", id, username, forkedFrom, fitness, gen);
+            }
+
+            rs.close();
+            st.close();
+
+
+
+
+
 
         } catch (Exception e) {
             System.err.println("Cannot connect to database server");
@@ -69,7 +87,7 @@ public class ServerPersistence extends InteractiveFilePersistence {
                 } catch (Exception e) {}
             }
         }
-    }*/
+    }
 
     public void uploadToDatabase(ArrayList<String> chrom, String username, String comment, int gen, int fitness,
                                  String genfit, int forkedFrom, String runFile, Chromosome chosenChrom,
