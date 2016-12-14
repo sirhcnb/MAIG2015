@@ -214,6 +214,8 @@ public class UserTrainer implements Configurable {
             }
         }
 
+        GifSequenceWriter.fileNumber = 0;
+
         logger.info( "Preview: Stop" );
 
         if(chromFile != null) {
