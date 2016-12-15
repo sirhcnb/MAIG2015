@@ -73,9 +73,6 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
         System.out.println("Evaluting list of chromosones...");
         System.out.println("Increasing generation: " + generation);
 
-        //Create gif folder for training with interaction
-        new File("db/gifs/interaction/" + folderName).mkdirs();
-
         Iterator it = chromosomes.iterator();
         while ( it.hasNext() ) {
             Chromosome chrom = (Chromosome) it.next();
@@ -115,7 +112,8 @@ public class FitnessFunction implements BulkFitnessFunction, Configurable {
                 fitness = runInteraction(activator, delayRecording);
 
                 //Create and save gif.
-                GifSequenceWriter.createGIF("db/gifs/interaction/" + folderName + "/");
+                new File("./db/gifs/interaction/" + folderName + "/").mkdirs();
+                GifSequenceWriter.createGIF("./db/gifs/interaction/" + folderName + "/");
 
                 //Create and save path of mario image TODO: Out comment if image level isn't to be made
                 //GifSequenceWriter.createLevelImage(System.getProperty("user.home") + "/Desktop/levelImage.png");

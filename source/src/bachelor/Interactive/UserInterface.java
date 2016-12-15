@@ -77,6 +77,15 @@ public class UserInterface extends Application {
             System.out.println(th);
         }
 
+        new File("./db/best").mkdir();
+        new File("./db/chromosome").mkdir();
+        new File("./db/csv").mkdir();
+        new File("./db/images").mkdir();
+        new File("./db/levelImages").mkdir();
+        new File("./db/gifs").mkdir();
+        new File("./db/gifs/interaction").mkdirs();
+        new File("./db/previews").mkdir();
+
         primaryStage.setScene(new Scene(root, 1700, 870));
         primaryStage.setResizable(false);
         primaryStage.setTitle("Interactive Mario Trainer");
@@ -287,7 +296,7 @@ public class UserInterface extends Application {
         previewButton.setGraphic(new ImageView());
         previewButton.setTranslateY(50);
 
-        previewButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
+        /*previewButton.setOnMouseEntered(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
                 String path = null;
@@ -302,7 +311,7 @@ public class UserInterface extends Application {
                     setPreview(path);
                 }
             }
-        });
+        });*/
 
         cp.setAlignment(Pos.TOP_CENTER);
 

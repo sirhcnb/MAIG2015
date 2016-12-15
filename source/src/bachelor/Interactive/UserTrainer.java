@@ -192,7 +192,7 @@ public class UserTrainer implements Configurable {
         logger.info( "Preview: Start" );
 
         //Create gif folder for previews
-        Path previewPath = Paths.get((System.getProperty("user.home") + "/Documents/previews/"));
+        Path previewPath = Paths.get("./db/previews/");
         if(!Files.exists(previewPath)) {
             new File(previewPath.toString()).mkdirs();
         }
@@ -212,9 +212,9 @@ public class UserTrainer implements Configurable {
                 GifSequenceWriter.fileNumber = previewChromID;
                 GifSequenceWriter.createGIF(previewPath.toString() + "/");
             }
-        }
 
-        GifSequenceWriter.fileNumber = 0;
+            GifSequenceWriter.fileNumber = 0;
+        }
 
         logger.info( "Preview: Stop" );
 
@@ -307,6 +307,8 @@ public class UserTrainer implements Configurable {
 
         isNewRun = true;
         init(props);
+
+        new File("./db/gifs/interaction").mkdirs();
     }
 
     /**
